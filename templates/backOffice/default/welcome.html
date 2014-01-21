@@ -1,0 +1,38 @@
+{extends file="importt1.tpl"}
+
+{block name="step"}{intl l='Welcome !'}{/block}
+
+{block name="inner-content"}
+<div class="row">
+    <div class="col-md-7 title">{intl l="Thelia 1 Database importation"}</div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <p>
+        {intl l="This module will import a Thelia 1.5.4.x database into the local Them:ia 2 database. The following information will be imported :
+        <ul>
+            <li>Customers</li>
+            <li>Orders</li>
+            <li>The whole catalog (categories, products, features, attributes, and the related stuff)</li>
+            <li>All the content (folders and content)</li>
+        </ul>
+        The module will ask you a few questions before starting the import process."}
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+       <div class="alert alert-danger">
+           <p>{intl l="Be aware that the related content of your database will be deleted, so be sure to backup it before starting the importation process."}</p>
+       </div>
+   </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+         <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-primary">{intl l="OK, let's go !"} <span class="glyphicon glyphicon-forward"></span></a>
+    </div>
+</div>
+{/block}

@@ -1,0 +1,25 @@
+{extends file="importt1.tpl"}
+
+{block name="step"}{$object} Importation{/block}
+
+{block name="inner-content"}
+<div class="row">
+    <div class="col-md-7 title">{$object} Importation</div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+	        <p>{intl l="%total %object have been processed." total=$total object=$object}</p>
+	        {if $errors > 0}
+	        	<p>{intl l="%error(s) errors detected, please <a href=\"%log_url\" target=\"_log\">check the log file</a> for details." errors=$errors log_url={url path='/admin/module/ImportT1/show-log'}}</p>
+	        {/if}
+     </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+		<a href="{$startover_route}" class="btn btn-danger"><span class="glyphicon glyphicon-removed"></span> {intl l="Start Over"}</a>
+		<a href="{$next_route}" class="btn btn-primary">{intl l="Next"} <span class="glyphicon glyphicon-forward"></span></a>
+	</div>
+</div>
+{/block}

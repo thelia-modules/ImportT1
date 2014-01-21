@@ -1,0 +1,32 @@
+{extends file="importt1.tpl"}
+
+{block name="step"}{intl l='Review'}{/block}
+
+{block name="inner-content"}
+<div class="row">
+    <div class="col-md-7 title">{intl l="Review parameters"}</div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <p>
+        {intl l="Please review the importation parameters below, and click start to begin the import process."}
+
+        <ul>
+            <li>{intl l="Database: <strong>%db</strong>" db=$dbname}</li>
+            <li>{intl l="Host: <strong>%host</strong>" host=$hostname}</li>
+            <li>{intl l="Thelia 1 shop name : <strong>%shopname</strong>" shopname=$shop_name}</li>
+            <li>{intl l="Thelia 1 version : <strong>%version</strong>" version=$version}</li>
+            <li>{intl l="Thelia 1 client directory path : <strong>%dir</strong>" dir=$client_directory}</li>
+        </ul>
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+	    <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-default"><span class="glyphicon glyphicon-backward"></span> {intl l="Previous"}</a>
+	    <a href="{url path='/admin/module/ImportT1/customers'}" class="btn btn-primary">{intl l="Next"} <span class="glyphicon glyphicon-forward"></span></a>
+    </div>
+</div>
+{/block}

@@ -1,0 +1,193 @@
+<?php
+namespace ImportT1\Import;
+
+use ImportT1\Model\Db;
+use Thelia\Core\Translation\Translator;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Thelia\Model\LangQuery;
+use Thelia\Model\CustomerTitleQuery;
+use Thelia\Model\CustomerTitleI18nQuery;
+use Thelia\Model\CountryQuery;
+use Thelia\Model\CustomerQuery;
+use Thelia\Exception\UrlRewritingException;
+use Thelia\Model\RewritingUrlQuery;
+use Thelia\Log\Tlog;
+
+class BaseImport {
+
+    const CHUNK_SIZE = 100;
+
+    protected $dispatcher;
+    protected $t1db;
+
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db) {
+
+        $this->dispatcher = $dispatcher;
+
+        $this->t1db = $t1db;
+
+        $this->t1db->connect();
+    }
+
+    public function getChunkSize() {
+        return self::CHUNK_SIZE;
+    }
+
+    public function preImport() {
+    }
+
+    public function import($startRecord = 0) {
+        // Override this method, please.
+    }
+
+    public function postImport() {
+    }
+
+    private $lang_cache = array();
+
+    public function getT2Lang($id_lang_thelia_1) {
+
+        if (! isset($this->lang_cache[$id_lang_thelia_1])) {
+
+            $obj = $this->t1db->query_obj("select * from lang where id=?", array($id_lang_thelia_1));
+
+            if ($obj == false) {
+                throw new ImportException(
+                        Translator::getInstance()->trans("Failed to find a Thelia 1 lang for id '%id'", array("%id" => $id_lang_thelia_1)));
+
+            }
+
+            $lang = LangQuery::create()->findOneByCode(strtolower($obj->code));
+
+            if ($lang === null) {
+                throw new ImportException(
+                    Translator::getInstance()->trans("Failed to find a Thelia 2 lang for T1 lang code '%code'", array("%code" => $obj->code)));
+            }
+
+            $this->lang_cache[$id_lang_thelia_1] = $lang;
+        }
+
+        return $this->lang_cache[$id_lang_thelia_1];
+    }
+
+    private $title_cache = array();
+
+    public function getT2CustomerTitle($id_title_thelia_1) {
+
+        if (! isset($this->title_cache[$id_title_thelia_1])) {
+
+            $obj = $this->t1db->query_obj("select * from raisondesc where raison=? limit 1", array($id_title_thelia_1));
+
+            if ($obj == false) {
+                throw new ImportException(
+                        Translator::getInstance()->trans("Failed to find a Thelia 1 customer title for id '%id'", array("%id" => $id_title_thelia_1)));
+
+            }
+
+            // Find the T1 objet lang
+            $lang = $this->getT2Lang($obj->lang);
+
+            // Get the T2 title for this lang
+            $title = CustomerTitleI18nQuery::create()->filterByLocale($lang->getLocale())->findOneByShort($obj->court);
+
+            if ($title === null) {
+                throw new ImportException(
+                    Translator::getInstance()->trans(
+                            "Failed to find a Thelia 2 title for T1 title '%id', %short",
+                            array("%id" => $obj->id, "%short" => $obj->short)));
+            }
+
+            $this->title_cache[$id_title_thelia_1] = $title;
+        }
+
+        return $this->title_cache[$id_title_thelia_1];
+    }
+
+
+    private $country_cache = array();
+
+    public function getT2Country($id_country_thelia_1) {
+
+        if (! isset($this->title_cache[$id_country_thelia_1])) {
+
+            $obj = $this->t1db->query_obj("select isoalpha3 from pays where id=?", array($id_country_thelia_1));
+
+            if ($obj == false) {
+                throw new ImportException(
+                        Translator::getInstance()->trans("Failed to find a Thelia 1 country for id '%id'", array("%id" => $id_country_thelia_1)));
+
+            }
+             // Get the T2 country
+            $country = CountryQuery::create()->findOneByIsoalpha3($obj->isoalpha3);
+
+            if ($country === null) {
+                throw new ImportException(
+                        Translator::getInstance()->trans(
+                                "Failed to find a Thelia 2 country for T1 country '%id'",
+                                array("%id" => $obj->id)));
+            }
+
+            $this->title_cache[$id_country_thelia_1] = $country;
+        }
+
+        return $this->title_cache[$id_country_thelia_1];
+    }
+
+
+    public function getT2Customer($id_client_thelia_1) {
+
+        $t1obj = $this->t1db->query_obj("select email from client where id=?", array($id_client_thelia_1));
+
+        if ($t1obj == false) {
+            throw new ImportException(
+                    Translator::getInstance()->trans("Failed to find a Thelia 1 customer for id '%id'", array("%id" => $id_client_thelia_1)));
+
+        }
+
+        // Get the T2 customer
+        $t2obj = CustomerQuery::create()->findOneByEmail($t1obj->email);
+
+        if ($t2obj === null) {
+            throw new ImportException(
+                    Translator::getInstance()->trans(
+                            "Failed to find a Thelia 2 customer for T1 customer '%id'",
+                            array("%id" => $t1obj->id)));
+        }
+
+        return $t2obj;
+    }
+
+    protected function updateRewrittenUrl($t2_object, $locale, $id_lang_t1, $fond_t1, $params_t1) {
+
+        $t1_obj = $this->t1db->query_obj(
+            "select * from reecriture where fond=? and param=? and lang=? and actif=1",
+            array($fond_t1, "&$params_t1", $id_lang_t1)
+        );
+
+        if ($t1_obj) {
+            try {
+                // Delete all previous instance for the T2 object and for the rewtitten URL
+                RewritingUrlQuery::create()
+                    ->filterByViewLocale($locale)
+                    ->findByViewId($t2_object->getId())
+                    ->delete()
+                ;
+
+                RewritingUrlQuery::create()
+                    ->filterByViewLocale($locale)
+                    ->findByUrl($t1_obj->url)
+                    ->delete()
+                ;
+
+                    $t2_object->setRewrittenUrl($locale, $t1_obj->url);
+            }
+            catch (UrlRewritingException $ex) {
+                Tlog::getInstance()
+                    ->addError(
+                       "Failed to create rewritten URL for locale $locale, fond $fond_t1, with params $params_t1: ",
+                       $ex->getMessage()
+                );
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <fullnamespace>ImportT1\ImportT1</fullnamespace>
+    <descriptive locale="en_US">
+        <title>Thelia 1.5.3.x database importation</title>
+    </descriptive>
+    <descriptive locale="fr_FR">
+        <title>Importation d'une base de données Thelia 1.5.4.x</title>
+    </descriptive>
+    <version>0.0.1</version>
+    <author>
+        <name>Franck Allimant</name>
+        <company>CQFDev</company>
+        <email>thelia@cqfdev.fr</email>
+        <website>www.cqfdev.fr</website>
+    </author>
+    <type>classic</type>
+    <thelia>2.0.0</thelia>
+    <stability>alpha</stability>
+</module>
