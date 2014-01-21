@@ -37,6 +37,19 @@ class CustomersImport extends BaseImport {
 
         while ($hdl && $client = $this->t1db->fetch_object($hdl)) {
 
+            $count++;
+
+            try {
+                $this->getT2Customer($client->id);
+
+                Tlog::getInstance()->warning("Customer ID=$client->id ref=$client->ref already imported.");
+
+                continue;
+            }
+            catch (ImportException $ex) {
+                // Okay, the customer was not imported.
+            }
+
             try {
                 $title   = $this->getT2CustomerTitle($client->raison);
                 $lang    = $this->getT2Lang($client->lang);
@@ -119,8 +132,6 @@ class CustomersImport extends BaseImport {
 
                 $errors++;
             }
-
-            $count++;
         }
 
         return new ImportChunkResult($count, $errors);

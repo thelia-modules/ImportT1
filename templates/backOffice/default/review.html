@@ -9,8 +9,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        <p>
-        {intl l="Please review the importation parameters below, and click start to begin the import process."}
+        <p>{intl l="Please review the importation parameters below, and click start to begin the import process."}</p>
 
         <ul>
             <li>{intl l="Database: <strong>%db</strong>" db=$dbname}</li>
@@ -19,14 +18,15 @@
             <li>{intl l="Thelia 1 version : <strong>%version</strong>" version=$version}</li>
             <li>{intl l="Thelia 1 client directory path : <strong>%dir</strong>" dir=$client_directory}</li>
         </ul>
-        </p>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-12">
-	    <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-default"><span class="glyphicon glyphicon-backward"></span> {intl l="Previous"}</a>
-	    <a href="{url path='/admin/module/ImportT1/customers'}" class="btn btn-primary">{intl l="Next"} <span class="glyphicon glyphicon-forward"></span></a>
+        <div class="btn-toolbar" role="toolbar">
+		    <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-default"><span class="glyphicon glyphicon-backward"></span> {intl l="Previous"}</a>
+		    <a href="{url path='/admin/module/ImportT1/customers'}" class="btn btn-primary pull-right">{intl l="Next"} <span class="glyphicon glyphicon-forward"></span></a>
+		</div>
     </div>
 </div>
 {/block}

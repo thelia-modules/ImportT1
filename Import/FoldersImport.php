@@ -69,6 +69,19 @@ class FoldersImport extends BaseImport
 
         while ($hdl && $dossier = $this->t1db->fetch_object($hdl)) {
 
+            $count++;
+
+            try {
+                $this->fld_corresp->getT2($dossier->id);
+
+                Tlog::getInstance()->warning("Folder ID=$dossier->id already imported.");
+
+                continue;
+            }
+            catch (ImportException $ex) {
+                // Okay, the dossier was not imported.
+            }
+
             try {
 
                 $event = new FolderCreateEvent();
@@ -91,7 +104,7 @@ class FoldersImport extends BaseImport
                         $event
                             ->setLocale($lang->getLocale())
                             ->setTitle($objdesc->titre)
-                            ->setParent($dossier->parent) // Will be corrected later
+                            ->setParent(1000000 + $dossier->parent) // Will be corrected later
                             ->setVisible($dossier->ligne == 1 ? true : false)
                         ;
 
@@ -124,7 +137,7 @@ class FoldersImport extends BaseImport
 
                     $update_event
                         ->setTitle($objdesc->titre)
-                        ->setParent($dossier->parent) // Will be corrected later
+                        ->setParent(1000000 + $dossier->parent) // Will be corrected later
                         ->setLocale($lang->getLocale())
                         ->setVisible($dossier->ligne == 1 ? true : false)
                         ->setChapo($objdesc->chapo)
@@ -143,8 +156,6 @@ class FoldersImport extends BaseImport
 
                 $errors++;
             }
-
-            $count++;
         }
 
         return new ImportChunkResult($count, $errors);
@@ -156,7 +167,7 @@ class FoldersImport extends BaseImport
         $obj_list = FolderQuery::create()->orderById()->find();
 
         foreach ($obj_list as $obj) {
-            $t1_parent = $obj->getParent();
+            $t1_parent = $obj->getParent() - 1000000;
 
             if ($t1_parent > 0) $obj->setParent($this->fld_corresp->getT2($t1_parent))->save();
         }

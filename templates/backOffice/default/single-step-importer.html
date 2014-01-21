@@ -18,8 +18,10 @@
 
 <div class="row">
     <div class="col-md-12">
-		<a href="{$startover_route}" class="btn btn-danger"><span class="glyphicon glyphicon-removed"></span> {intl l="Start Over"}</a>
-		<a href="{$next_route}" class="btn btn-primary">{intl l="Next"} <span class="glyphicon glyphicon-forward"></span></a>
+        <div class="btn-toolbar" role="toolbar">
+		    <a href="{$startover_route}" class="btn btn-info"><span class="glyphicon glyphicon-refresh"></span> {intl l="Start Over"}</a>
+		    <a href="{$next_route}" class="btn btn-primary pull-right">{intl l="Next"} <span class="glyphicon glyphicon-forward"></span></a>
+		</div>
 	</div>
 </div>
 {/block}

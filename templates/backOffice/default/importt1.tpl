@@ -1,5 +1,11 @@
 {extends file="admin-layout.tpl"}
 
+{block name="after-admin-css"}
+	{stylesheets file='assets/import-t1.css' source='ImportT1'}
+        <link rel="stylesheet" href="{$asset_url}">
+    {/stylesheets}
+{/block}
+
 {block name="page-title"}{intl l='Thelia 1 DB Import'}{/block}
 
 {block name="check-resource"}module.ImportT1{/block}

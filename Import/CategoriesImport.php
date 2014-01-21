@@ -112,6 +112,19 @@ class CategoriesImport extends BaseImport
 
         while ($hdl && $rubrique = $this->t1db->fetch_object($hdl)) {
 
+            $count++;
+
+            try {
+                $this->cat_corresp->getT2($rubrique->id);
+
+                Tlog::getInstance()->warning("Category ID=$rubrique->id already imported.");
+
+                continue;
+            }
+            catch (ImportException $ex) {
+                // Okay, the category was not imported.
+            }
+
             try {
 
                 $event = new CategoryCreateEvent();
@@ -134,7 +147,7 @@ class CategoriesImport extends BaseImport
                         $event
                             ->setLocale($lang->getLocale())
                             ->setTitle($objdesc->titre)
-                            ->setParent($rubrique->parent) // Will be corrected later
+                            ->setParent(1000000 + $rubrique->parent) // Will be corrected later
                             ->setVisible($rubrique->ligne == 1 ? true : false)
                         ;
 
@@ -253,7 +266,7 @@ class CategoriesImport extends BaseImport
 
                     $update_event
                         ->setTitle($objdesc->titre)
-                        ->setParent($rubrique->parent) // Will be corrected later
+                        ->setParent(1000000 + $rubrique->parent) // Will be corrected later
                         ->setLocale($lang->getLocale())
                         ->setVisible($rubrique->ligne == 1 ? true : false)
                         ->setChapo($objdesc->chapo)
@@ -281,8 +294,6 @@ class CategoriesImport extends BaseImport
 
                 $errors++;
             }
-
-            $count++;
         }
 
         return new ImportChunkResult($count, $errors);
@@ -290,11 +301,11 @@ class CategoriesImport extends BaseImport
 
     public function postImport()
     {
-        // Fix parent IDs for each categories, which are stille T1 parent IDs
+        // Fix parent IDs for each categories, which are still T1 parent IDs
         $obj_list = CategoryQuery::create()->orderById()->find();
 
         foreach ($obj_list as $obj) {
-            $t1_parent = $obj->getParent();
+            $t1_parent = $obj->getParent() - 1000000;
 
             if ($t1_parent > 0) $obj->setParent($this->cat_corresp->getT2($t1_parent))->save();
         }

@@ -69,9 +69,23 @@ class ContentsImport extends BaseImport
 
         while ($hdl && $contenu = $this->t1db->fetch_object($hdl)) {
 
+            $count++;
+
             $dossier = $this->fld_corresp->getT2($contenu->dossier);
 
             if ($dossier > 0) {
+
+                try {
+                    $this->content_corresp->getT2($contenu->id);
+
+                    Tlog::getInstance()->warning("Content ID=$contenu->id already imported.");
+
+                    continue;
+                }
+                catch (ImportException $ex) {
+                    // Okay, the content was not imported.
+                }
+
                 try {
 
                     $event = new ContentCreateEvent();
@@ -152,8 +166,6 @@ class ContentsImport extends BaseImport
 
                 $errors++;
             }
-
-            $count++;
         }
 
         return new ImportChunkResult($count, $errors);

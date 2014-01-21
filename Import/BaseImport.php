@@ -136,7 +136,7 @@ class BaseImport {
 
     public function getT2Customer($id_client_thelia_1) {
 
-        $t1obj = $this->t1db->query_obj("select email from client where id=?", array($id_client_thelia_1));
+        $t1obj = $this->t1db->query_obj("select id, email from client where id=?", array($id_client_thelia_1));
 
         if ($t1obj == false) {
             throw new ImportException(

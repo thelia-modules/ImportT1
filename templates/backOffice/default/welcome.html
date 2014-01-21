@@ -10,7 +10,7 @@
 <div class="row">
     <div class="col-md-12">
         <p>
-        {intl l="This module will import a Thelia 1.5.4.x database into the local Them:ia 2 database. The following information will be imported :
+        {intl l="This module will import a Thelia 1.5.4.x database into the local Thelia 2 database. The following information will be imported :
         <ul>
             <li>Customers</li>
             <li>Orders</li>
@@ -32,7 +32,9 @@
 
 <div class="row">
     <div class="col-md-12">
-         <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-primary">{intl l="OK, let's go !"} <span class="glyphicon glyphicon-forward"></span></a>
+        <div class="btn-toolbar" role="toolbar">
+            <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-primary pull-right">{intl l="OK, let's go !"} <span class="glyphicon glyphicon-forward"></span></a>
+        </div>
     </div>
 </div>
 {/block}
