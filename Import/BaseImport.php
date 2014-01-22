@@ -12,6 +12,8 @@ use Thelia\Model\CustomerQuery;
 use Thelia\Exception\UrlRewritingException;
 use Thelia\Model\RewritingUrlQuery;
 use Thelia\Log\Tlog;
+use Thelia\Model\CurrencyQuery;
+use Thelia\Model\TaxRuleQuery;
 
 class BaseImport {
 
@@ -42,6 +44,34 @@ class BaseImport {
 
     public function postImport() {
     }
+
+    private $currency_cache;
+
+    public function getT2Currency() {
+
+        if (! isset($this->currency_cache)) {
+
+            $obj = $this->t1db->query_obj("select * from devise where defaut=1");
+
+            if ($obj == false) {
+                throw new ImportException(
+                        Translator::getInstance()->trans("Failed to find a Thelia 1 default currency"));
+
+            }
+
+            $currency = CurrencyQuery::create()->findOneByCode(strtolower($obj->code));
+
+            if ($currency === null) {
+                throw new ImportException(
+                        Translator::getInstance()->trans("Failed to find a Thelia 2 lang for T1 lang code '%code'", array("%code" => $obj->code)));
+            }
+
+            $this->currency_cache = $currency;
+        }
+
+        return $this->currency_cache;
+    }
+
 
     private $lang_cache = array();
 

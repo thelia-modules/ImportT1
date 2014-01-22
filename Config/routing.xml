@@ -77,6 +77,15 @@
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importProductsAction</default>
     </route>
 
+    <!-- Orders importation -->
+    <route id="importT1.start.orders" path="/admin/module/ImportT1/orders">
+        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importOrdersAction</default>
+    </route>
+
+    <route id="importT1.orders" path="/admin/module/ImportT1/order/{start}/{errors}">
+        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importOrdersAction</default>
+    </route>
+
     <!-- The default route, to display a template -->
 
     <route id="importT1.processTemplate" path="/admin/module/ImportT1/{template}">

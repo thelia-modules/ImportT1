@@ -42,7 +42,7 @@ abstract class AbstractMediaImport extends BaseImport {
 
                         $obj
                             ->setLocale($lang->getLocale())
-                            ->setTitle($desc->title)
+                            ->setTitle($desc->titre)
                             ->setChapo($desc->chapo)
                             ->setDescription($desc->description)
                             ->setPostscriptum('') // Missing in T1

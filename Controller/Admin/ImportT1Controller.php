@@ -20,6 +20,7 @@ use ImportT1\Import\ContentsImport;
 use Thelia\Log\Destination\TlogDestinationFile;
 use Symfony\Component\Filesystem\Filesystem;
 use Thelia\Core\HttpFoundation\Response;
+use ImportT1\Import\ProductsImport;
 
 class ImportT1Controller extends BaseAdminController
 {
@@ -325,6 +326,19 @@ class ImportT1Controller extends BaseAdminController
                 'category',
                 $this->getRoute('importT1.start.products'),
                 $this->getRoute('importT1.start.categories'),
+                $start,
+                $errors
+        );
+    }
+
+    public function importProductsAction($start = 0, $errors = 0) {
+
+        return $this->genericImport(
+                new ProductsImport($this->getDispatcher(), $this->getDb()),
+                Translator::getInstance()->trans("Products importation"),
+                'product',
+                $this->getRoute('importT1.start.orders'),
+                $this->getRoute('importT1.start.products'),
                 $start,
                 $errors
         );

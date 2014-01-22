@@ -27,10 +27,10 @@ class FeaturesImport extends BaseImport {
         FeatureAvQuery::create()->deleteAll();
 
         // Create T1 <-> T2 IDs correspondance tables
-        $this->feat_corresp = new CorrespondanceTable('t1_t2_features', $this->t1db);
+        $this->feat_corresp = new CorrespondanceTable(CorrespondanceTable::FEATURES, $this->t1db);
         $this->feat_corresp->reset();
 
-        $this->feat_av_corresp = new CorrespondanceTable('t1_t2_features_av', $this->t1db);
+        $this->feat_av_corresp = new CorrespondanceTable(CorrespondanceTable::FEATURES_AV, $this->t1db);
         $this->feat_av_corresp->reset();
     }
 

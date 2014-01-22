@@ -56,13 +56,13 @@ class CategoriesImport extends BaseImport
 
         parent::__construct($dispatcher, $t1db);
 
-        $this->cat_corresp  = new CorrespondanceTable('t1_t2_categories', $this->t1db);
-        $this->tpl_corresp  = new CorrespondanceTable('t1_t2_templates', $this->t1db);
+        $this->cat_corresp  = new CorrespondanceTable(CorrespondanceTable::CATEGORIES, $this->t1db);
+        $this->tpl_corresp  = new CorrespondanceTable(CorrespondanceTable::TEMPLATES, $this->t1db);
 
-        $this->attr_corresp = new CorrespondanceTable('t1_t2_attributes', $this->t1db);
-        $this->feat_corresp = new CorrespondanceTable('t1_t2_features', $this->t1db);
+        $this->attr_corresp = new CorrespondanceTable(CorrespondanceTable::ATTRIBUTES, $this->t1db);
+        $this->feat_corresp = new CorrespondanceTable(CorrespondanceTable::FEATURES, $this->t1db);
 
-        $this->content_corresp = new CorrespondanceTable('t1_t2_contents', $this->t1db);
+        $this->content_corresp = new CorrespondanceTable(CorrespondanceTable::CONTENTS, $this->t1db);
     }
 
     public function getChunkSize() {
@@ -143,11 +143,13 @@ class CategoriesImport extends BaseImport
                     // A title is required to create the rewritten URL
                     if (empty($objdesc->titre)) $objdesc->titre = sprintf("Untitled-%d-%s", $objdesc->id, $lang->getCode());
 
+                    $parent = $rubrique->parent > 0 ? $rubrique->parent + 1000000 : 0;
+
                     if ($idx == 0) {
                         $event
                             ->setLocale($lang->getLocale())
                             ->setTitle($objdesc->titre)
-                            ->setParent(1000000 + $rubrique->parent) // Will be corrected later
+                            ->setParent($parent) // Will be corrected later
                             ->setVisible($rubrique->ligne == 1 ? true : false)
                         ;
 
@@ -266,7 +268,7 @@ class CategoriesImport extends BaseImport
 
                     $update_event
                         ->setTitle($objdesc->titre)
-                        ->setParent(1000000 + $rubrique->parent) // Will be corrected later
+                        ->setParent($parent) // Will be corrected later
                         ->setLocale($lang->getLocale())
                         ->setVisible($rubrique->ligne == 1 ? true : false)
                         ->setChapo($objdesc->chapo)

@@ -26,10 +26,10 @@ class AttributesImport extends BaseImport {
         AttributeAvQuery::create()->deleteAll();
 
         // Create T1 <-> T2 IDs correspondance tables
-        $this->attr_corresp = new CorrespondanceTable('t1_t2_attributes', $this->t1db);
+        $this->attr_corresp = new CorrespondanceTable(CorrespondanceTable::ATTRIBUTES, $this->t1db);
         $this->attr_corresp->reset();
 
-        $this->attr_av_corresp = new CorrespondanceTable('t1_t2_attributes_av', $this->t1db);
+        $this->attr_av_corresp = new CorrespondanceTable(CorrespondanceTable::ATTRIBUTES_AV, $this->t1db);
         $this->attr_av_corresp->reset();
     }
 

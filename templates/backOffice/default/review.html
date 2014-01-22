@@ -16,7 +16,14 @@
             <li>{intl l="Host: <strong>%host</strong>" host=$hostname}</li>
             <li>{intl l="Thelia 1 shop name : <strong>%shopname</strong>" shopname=$shop_name}</li>
             <li>{intl l="Thelia 1 version : <strong>%version</strong>" version=$version}</li>
-            <li>{intl l="Thelia 1 client directory path : <strong>%dir</strong>" dir=$client_directory}</li>
+            <li>{intl l="Thelia 1 client directory path : "}
+                <strong>{if empty($client_directory)}
+                    {intl l="Not specified - images and documents will not be imported."}
+                {else}
+                    {$client_directory}
+                {/if}
+                </strong>
+            </li>
         </ul>
     </div>
 </div>

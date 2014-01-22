@@ -26,9 +26,9 @@ class ContentsImport extends BaseImport
 
         parent::__construct($dispatcher, $t1db);
 
-        $this->content_corresp  = new CorrespondanceTable('t1_t2_contents', $this->t1db);
+        $this->content_corresp  = new CorrespondanceTable(CorrespondanceTable::CONTENTS, $this->t1db);
 
-        $this->fld_corresp  = new CorrespondanceTable('t1_t2_folders', $this->t1db);
+        $this->fld_corresp  = new CorrespondanceTable(CorrespondanceTable::FOLDERS, $this->t1db);
     }
 
     public function getChunkSize() {

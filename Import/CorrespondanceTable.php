@@ -7,6 +7,17 @@ use Thelia\Core\Translation\Translator;
  */
 class CorrespondanceTable {
 
+    const ATTRIBUTES = 't1_t2_attributes';
+    const ATTRIBUTES_AV = 't1_t2_attributes_av';
+    const CATEGORIES = 't1_t2_categories';
+    const CONTENTS = 't1_t2_contents';
+    const FEATURES = 't1_t2_features';
+    const FEATURES_AV = 't1_t2_features_av';
+    const FOLDERS = 't1_t2_folders';
+    const PRODUCTS = 't1_t2_products';
+    const TEMPLATES = 't1_t2_templates';
+    const TAX = 't1_t2_tax';
+
     protected $table_name;
     protected $db;
 

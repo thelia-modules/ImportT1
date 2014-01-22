@@ -28,7 +28,7 @@ class FoldersImport extends BaseImport
 
         parent::__construct($dispatcher, $t1db);
 
-        $this->fld_corresp  = new CorrespondanceTable('t1_t2_folders', $this->t1db);
+        $this->fld_corresp  = new CorrespondanceTable(CorrespondanceTable::FOLDERS, $this->t1db);
     }
 
     public function getChunkSize() {
@@ -100,11 +100,13 @@ class FoldersImport extends BaseImport
                     // A title is required to create the rewritten URL
                     if (empty($objdesc->titre)) $objdesc->titre = sprintf("Untitled-%d-%s", $objdesc->id, $lang->getCode());
 
+                    $parent = $dossier->parent > 0 ? $dossier->parent + 1000000 : 0;
+
                     if ($idx == 0) {
                         $event
                             ->setLocale($lang->getLocale())
                             ->setTitle($objdesc->titre)
-                            ->setParent(1000000 + $dossier->parent) // Will be corrected later
+                            ->setParent($parent) // Will be corrected later
                             ->setVisible($dossier->ligne == 1 ? true : false)
                         ;
 
@@ -137,7 +139,7 @@ class FoldersImport extends BaseImport
 
                     $update_event
                         ->setTitle($objdesc->titre)
-                        ->setParent(1000000 + $dossier->parent) // Will be corrected later
+                        ->setParent($parent) // Will be corrected later
                         ->setLocale($lang->getLocale())
                         ->setVisible($dossier->ligne == 1 ? true : false)
                         ->setChapo($objdesc->chapo)
