@@ -21,6 +21,6 @@ class CategoryDocumentImport extends AbstractMediaImport {
     }
 
     public function importMedia($id_rubrique, $id_category) {
-        return parent::doImportMedia($id_rubrique, $id_category, "image", "images".DS."category");
+        return parent::doImportMedia($id_rubrique, $id_category, "document", "documents".DS."category");
     }
 }

@@ -46,7 +46,7 @@ class CorrespondanceTable {
 
         if ($obj === false || intval($obj->idt2) == 0) {
             throw new ImportException(
-                Translator::getInstance()->trans("Failed to find a Thelia 2 category for T1 category '%id'", array("%id" => $idt1)));
+                Translator::getInstance()->trans("Failed to find a Thelia 2 ID for Thelia 1 ID '%id' in %table", array("%id" => $idt1, "%table" => $this->table_name)));
         }
 
         return $obj->idt2;

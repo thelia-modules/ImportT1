@@ -21,6 +21,6 @@ class ProductDocumentImport extends AbstractMediaImport {
     }
 
     public function importMedia($id_produit, $id_product) {
-        return parent::doImportMedia($id_produit, $id_product, "produit", "documents".DS."product");
+        return parent::doImportMedia($id_produit, $id_product, "document", "documents".DS."product");
     }
 }

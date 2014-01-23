@@ -21,6 +21,6 @@ class ContentDocumentImport extends AbstractMediaImport {
     }
 
     public function importMedia($id_contenu, $id_content) {
-        return parent::doImportMedia($id_contenu, $id_content, "contenu", "documents".DS."content");
+        return parent::doImportMedia($id_contenu, $id_content, "document", "documents".DS."content");
     }
 }
