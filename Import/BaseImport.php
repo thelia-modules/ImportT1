@@ -29,6 +29,7 @@ use Thelia\Core\Translation\Translator;
 use Thelia\Exception\UrlRewritingException;
 use Thelia\Log\Tlog;
 use Thelia\Model\Country;
+use Thelia\Model\CountryI18nQuery;
 use Thelia\Model\CountryQuery;
 use Thelia\Model\CurrencyQuery;
 use Thelia\Model\CustomerQuery;
@@ -210,21 +211,41 @@ class BaseImport
             $obj = $this->t1db->query_obj("select isoalpha3 from pays where id=?", array($id_country_thelia_1));
 
             if ($obj == false) {
-                throw new ImportException(
-                    Translator::getInstance()->trans(
-                        "Failed to find a Thelia 1 country for id '%id'",
-                        array("%id" => $id_country_thelia_1)
-                    ));
 
+                $obj = $this->t1db->query_obj("select pays, titre from paysdesc where pays=? and lang=1", array($id_country_thelia_1));
+
+                if ($obj == false) {
+                    throw new ImportException(
+                        Translator::getInstance()->trans(
+                            "Failed to find a Thelia 1 country for id '%id'",
+                            array("%id" => $id_country_thelia_1)
+                        ));
+                }
+
+                $id = $obj->pays;
+
+                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle($obj->titre)) {
+                    throw new ImportException(
+                        Translator::getInstance()->trans(
+                            "Failed to find a Thelia 1 country for '%title'",
+                            array("%title" => $obj->titre)
+                        ));
+                }
+
+                $country = CountryQuery::create()->findPk($countryI18n->getId());
             }
-            // Get the T2 country
-            $country = CountryQuery::create()->findOneByIsoalpha3($obj->isoalpha3);
+            else {
+                $id = $obj->id;
+
+                // Get the T2 country
+                $country = CountryQuery::create()->findOneByIsoalpha3($obj->isoalpha3);
+            }
 
             if ($country === null) {
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 country for T1 country '%id'",
-                        array("%id" => $obj->id)
+                        array("%id" => $id)
                     ));
             }
 
