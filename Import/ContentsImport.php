@@ -192,7 +192,7 @@ class ContentsImport extends BaseImport
 
                         $idx++;
                     }
-                } catch (ImportException $ex) {
+                } catch (\Exception $ex) {
 
                     Tlog::getInstance()->addError("Failed to create content ID=$contenu->id: ", $ex->getMessage());
 

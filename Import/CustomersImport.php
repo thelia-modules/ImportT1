@@ -177,7 +177,7 @@ class CustomersImport extends BaseImport
                 }
 
                 $this->cust_corresp->addEntry($client->id, $event->getCustomer()->getId());
-            } catch (ImportException $ex) {
+            } catch (\Exception $ex) {
 
                 Tlog::getInstance()->addError("Failed to create customer ref $client->ref :", $ex->getMessage());
 

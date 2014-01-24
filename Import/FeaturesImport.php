@@ -210,7 +210,7 @@ class FeaturesImport extends BaseImport
                     $this->dispatcher->dispatch(TheliaEvents::FEATURE_AV_UPDATE, $update_event);
 
                     $idx++;
-                } catch (ImportException $ex) {
+                } catch (\Exception $ex) {
                     Tlog::getInstance()->addError("Failed to create Feature Av: ", $ex->getMessage());
 
                     $errors++;

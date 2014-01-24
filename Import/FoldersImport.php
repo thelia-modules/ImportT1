@@ -188,7 +188,7 @@ class FoldersImport extends BaseImport
 
                     $idx++;
                 }
-            } catch (ImportException $ex) {
+            } catch (\Exception $ex) {
 
                 Tlog::getInstance()->addError("Failed to create folder: ", $ex->getMessage());
 

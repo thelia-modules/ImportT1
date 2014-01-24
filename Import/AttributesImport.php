@@ -135,7 +135,7 @@ class AttributesImport extends BaseImport
                     $this->dispatcher->dispatch(TheliaEvents::ATTRIBUTE_UPDATE, $update_event);
 
                     $idx++;
-                } catch (ImportException $ex) {
+                } catch (\Exception $ex) {
                     Tlog::getInstance()->addError(
                         "Failed to create Attribute from $desc->titre ($declinaison->id): ",
                         $ex->getMessage()
@@ -210,7 +210,7 @@ class AttributesImport extends BaseImport
                     $this->dispatcher->dispatch(TheliaEvents::ATTRIBUTE_AV_UPDATE, $update_event);
 
                     $idx++;
-                } catch (ImportException $ex) {
+                } catch (\Exception $ex) {
                     Tlog::getInstance()->addError("Failed to create Attribute Av: ", $ex->getMessage());
 
                     $errors++;

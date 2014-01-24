@@ -446,7 +446,7 @@ class ProductsImport extends BaseImport
 
                         $idx++;
                     }
-                } catch (ImportException $ex) {
+                } catch (\Exception $ex) {
 
                     Tlog::getInstance()->addError("Failed to create product ID=$produit->id: ", $ex->getMessage());
 

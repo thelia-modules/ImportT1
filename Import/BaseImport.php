@@ -207,6 +207,10 @@ class BaseImport
     {
         if (!isset($this->country_cache[$id_country_thelia_1])) {
 
+            $id = $id_country_thelia_1;
+
+            $country = null;
+
             try {
                 $obj = $this->t1db->query_obj("select isoalpha3 from pays where id=?", array($id_country_thelia_1));
             }
@@ -228,7 +232,7 @@ class BaseImport
 
                 $id = $obj->pays;
 
-                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle($obj->titre)) {
+                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle("$obj->titre%")) {
                     throw new ImportException(
                         Translator::getInstance()->trans(
                             "Failed to find a Thelia 1 country for '%title'",
@@ -239,13 +243,11 @@ class BaseImport
                 $country = CountryQuery::create()->findPk($countryI18n->getId());
             }
             else {
-                $id = $obj->id;
-
                 // Get the T2 country
                 $country = CountryQuery::create()->findOneByIsoalpha3($obj->isoalpha3);
             }
 
-            if ($country === null) {
+            if ($country == null) {
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 country for T1 country '%id'",
