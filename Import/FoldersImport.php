@@ -1,22 +1,41 @@
 <?php
+/*************************************************************************************/
+/*                                                                                   */
+/*      Thelia 1 Database Importation Tool                                           */
+/*                                                                                   */
+/*      Copyright (c) CQFDev                                                         */
+/*      email : contact@cqfdev.fr                                                    */
+/*      web : http://www.cqfdev.fr                                                   */
+/*                                                                                   */
+/*      This program is free software; you can redistribute it and/or modify         */
+/*      it under the terms of the GNU General Public License as published by         */
+/*      the Free Software Foundation; either version 3 of the License                */
+/*                                                                                   */
+/*      This program is distributed in the hope that it will be useful,              */
+/*      but WITHOUT ANY WARRANTY; without even the implied warranty of               */
+/*      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                */
+/*      GNU General Public License for more details.                                 */
+/*                                                                                   */
+/*      You should have received a copy of the GNU General Public License            */
+/*	    along with this program. If not, see <http://www.gnu.org/licenses/>.         */
+/*                                                                                   */
+/*************************************************************************************/
+
 namespace ImportT1\Import;
 
+use ImportT1\Import\Media\FolderDocumentImport;
+use ImportT1\Import\Media\FolderImageImport;
+use ImportT1\Model\Db;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Thelia\Core\Event\Folder\FolderCreateEvent;
+use Thelia\Core\Event\Folder\FolderUpdateEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\UpdatePositionEvent;
 use Thelia\Log\Tlog;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use ImportT1\Model\Db;
-use Symfony\Component\Filesystem\Filesystem;
 use Thelia\Model\ContentQuery;
-use Thelia\Model\FolderQuery;
 use Thelia\Model\FolderDocumentQuery;
 use Thelia\Model\FolderImageQuery;
-use Thelia\Core\Event\Folder\FolderCreateEvent;
-use Thelia\Model\FolderImage;
-use Thelia\Model\FolderDocument;
-use Thelia\Core\Event\Folder\FolderUpdateEvent;
-use ImportT1\Import\Media\FolderDocumentImport;
-use ImportT1\Import\Media\FolderImageImport;
+use Thelia\Model\FolderQuery;
 
 class FoldersImport extends BaseImport
 {
@@ -24,14 +43,16 @@ class FoldersImport extends BaseImport
     private $fld_corresp;
 
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db) {
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    {
 
         parent::__construct($dispatcher, $t1db);
 
-        $this->fld_corresp  = new CorrespondanceTable(CorrespondanceTable::FOLDERS, $this->t1db);
+        $this->fld_corresp = new CorrespondanceTable(CorrespondanceTable::FOLDERS, $this->t1db);
     }
 
-    public function getChunkSize() {
+    public function getChunkSize()
+    {
         return 10;
     }
 
@@ -60,11 +81,15 @@ class FoldersImport extends BaseImport
         $errors = 0;
 
         $hdl = $this->t1db
-                ->query(
-                        sprintf("select * from dossier order by parent asc limit %d, %d", intval($startRecord),
-                                $this->getChunkSize()));
+            ->query(
+                sprintf(
+                    "select * from dossier order by parent asc limit %d, %d",
+                    intval($startRecord),
+                    $this->getChunkSize()
+                )
+            );
 
-        $image_import    = new FolderImageImport($this->dispatcher, $this->t1db);
+        $image_import = new FolderImageImport($this->dispatcher, $this->t1db);
         $document_import = new FolderDocumentImport($this->dispatcher, $this->t1db);
 
         while ($hdl && $dossier = $this->t1db->fetch_object($hdl)) {
@@ -77,8 +102,7 @@ class FoldersImport extends BaseImport
                 Tlog::getInstance()->warning("Folder ID=$dossier->id already imported.");
 
                 continue;
-            }
-            catch (ImportException $ex) {
+            } catch (ImportException $ex) {
                 // Okay, the dossier was not imported.
             }
 
@@ -89,16 +113,25 @@ class FoldersImport extends BaseImport
                 $idx = 0;
 
                 $descs = $this->t1db
-                        ->query_list("select * from dossierdesc where dossier = ? order by lang asc", array(
+                    ->query_list(
+                        "select * from dossierdesc where dossier = ? order by lang asc",
+                        array(
                             $dossier->id
-                        ));
+                        )
+                    );
 
                 foreach ($descs as $objdesc) {
 
                     $lang = $this->getT2Lang($objdesc->lang);
 
                     // A title is required to create the rewritten URL
-                    if (empty($objdesc->titre)) $objdesc->titre = sprintf("Untitled-%d-%s", $objdesc->id, $lang->getCode());
+                    if (empty($objdesc->titre)) {
+                        $objdesc->titre = sprintf(
+                            "Untitled-%d-%s",
+                            $objdesc->id,
+                            $lang->getCode()
+                        );
+                    }
 
                     $parent = $dossier->parent > 0 ? $dossier->parent + 1000000 : 0;
 
@@ -107,8 +140,7 @@ class FoldersImport extends BaseImport
                             ->setLocale($lang->getLocale())
                             ->setTitle($objdesc->titre)
                             ->setParent($parent) // Will be corrected later
-                            ->setVisible($dossier->ligne == 1 ? true : false)
-                        ;
+                            ->setVisible($dossier->ligne == 1 ? true : false);
 
                         $this->dispatcher->dispatch(TheliaEvents::FOLDER_CREATE, $event);
 
@@ -118,7 +150,7 @@ class FoldersImport extends BaseImport
 
                         // Update position
                         $update_position_event = new UpdatePositionEvent($folder_id,
-                                UpdatePositionEvent::POSITION_ABSOLUTE, $dossier->classement);
+                            UpdatePositionEvent::POSITION_ABSOLUTE, $dossier->classement);
 
                         $this->dispatcher->dispatch(TheliaEvents::FOLDER_UPDATE_POSITION, $update_position_event);
 
@@ -131,7 +163,13 @@ class FoldersImport extends BaseImport
                         $document_import->importMedia($dossier->id, $folder_id);
 
                         // Update the rewritten URL, if one was defined
-                        $this->updateRewrittenUrl($event->getFolder(), $lang->getLocale(), $objdesc->lang, "dossier", "id_dossier=$dossier->id");
+                        $this->updateRewrittenUrl(
+                            $event->getFolder(),
+                            $lang->getLocale(),
+                            $objdesc->lang,
+                            "dossier",
+                            "id_dossier=$dossier->id"
+                        );
                     }
 
                     // Update the newly created folder
@@ -144,15 +182,13 @@ class FoldersImport extends BaseImport
                         ->setVisible($dossier->ligne == 1 ? true : false)
                         ->setChapo($objdesc->chapo)
                         ->setDescription($objdesc->description)
-                        ->setPostscriptum($objdesc->postscriptum)
-                    ;
+                        ->setPostscriptum($objdesc->postscriptum);
 
                     $this->dispatcher->dispatch(TheliaEvents::FOLDER_UPDATE, $update_event);
 
                     $idx++;
                 }
-            }
-            catch (ImportException $ex) {
+            } catch (ImportException $ex) {
 
                 Tlog::getInstance()->addError("Failed to create folder: ", $ex->getMessage());
 
@@ -171,7 +207,9 @@ class FoldersImport extends BaseImport
         foreach ($obj_list as $obj) {
             $t1_parent = $obj->getParent() - 1000000;
 
-            if ($t1_parent > 0) $obj->setParent($this->fld_corresp->getT2($t1_parent))->save();
+            if ($t1_parent > 0) {
+                $obj->setParent($this->fld_corresp->getT2($t1_parent))->save();
+            }
         }
     }
 }

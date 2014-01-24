@@ -1,12 +1,12 @@
 <?php
 namespace ImportT1\Tests;
 
-use ImportT1\Model\Db;
-use ImportT1\Model\DatabaseInfo;
-use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
-use Thelia\Core\HttpFoundation\Session\Session;
-use Thelia\Core\HttpFoundation\Request;
 use ImportT1\Import\BaseImport;
+use ImportT1\Model\DatabaseInfo;
+use ImportT1\Model\Db;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Thelia\Core\HttpFoundation\Request;
+use Thelia\Core\HttpFoundation\Session\Session;
 
 /**
  * Class BaseImportTest
@@ -40,9 +40,10 @@ class BaseImportTest extends \PHPUnit_Framework_TestCase
         $this->thelia1_db->setDbInfo($dbinfo);
     }
 
-    public function testGetLang() {
+    public function testGetLang()
+    {
         $bi = new BaseImport($this->dispatcher, $this->thelia1_db);
 
         $bi->getT2Lang(1);
-   }
+    }
 }

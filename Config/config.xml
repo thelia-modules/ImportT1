@@ -31,7 +31,7 @@
     <services>
         <!-- Simple database access service -->
         <service id="importt1.db" class="ImportT1\Model\Db" scope="request">
-            <argument type="service" id="request" />
+            <argument type="service" id="request"/>
         </service>
     </services>
 

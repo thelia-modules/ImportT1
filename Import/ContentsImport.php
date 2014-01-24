@@ -1,37 +1,58 @@
 <?php
+/*************************************************************************************/
+/*                                                                                   */
+/*      Thelia 1 Database Importation Tool                                           */
+/*                                                                                   */
+/*      Copyright (c) CQFDev                                                         */
+/*      email : contact@cqfdev.fr                                                    */
+/*      web : http://www.cqfdev.fr                                                   */
+/*                                                                                   */
+/*      This program is free software; you can redistribute it and/or modify         */
+/*      it under the terms of the GNU General Public License as published by         */
+/*      the Free Software Foundation; either version 3 of the License                */
+/*                                                                                   */
+/*      This program is distributed in the hope that it will be useful,              */
+/*      but WITHOUT ANY WARRANTY; without even the implied warranty of               */
+/*      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                */
+/*      GNU General Public License for more details.                                 */
+/*                                                                                   */
+/*      You should have received a copy of the GNU General Public License            */
+/*	    along with this program. If not, see <http://www.gnu.org/licenses/>.         */
+/*                                                                                   */
+/*************************************************************************************/
+
 namespace ImportT1\Import;
 
+use ImportT1\Import\Media\ContentDocumentImport;
+use ImportT1\Import\Media\ContentImageImport;
+use ImportT1\Model\Db;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Thelia\Core\Event\Content\ContentCreateEvent;
+use Thelia\Core\Event\Content\ContentUpdateEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\UpdatePositionEvent;
 use Thelia\Log\Tlog;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use ImportT1\Model\Db;
-use Symfony\Component\Filesystem\Filesystem;
-use Thelia\Model\ContentQuery;
 use Thelia\Model\ContentDocumentQuery;
 use Thelia\Model\ContentImageQuery;
-use Thelia\Core\Event\Content\ContentCreateEvent;
-use Thelia\Model\ContentImage;
-use Thelia\Model\ContentDocument;
-use Thelia\Core\Event\Content\ContentUpdateEvent;
-use ImportT1\Import\Media\ContentDocumentImport;
-use ImportT1\Import\Media\ContentImageImport;
+use Thelia\Model\ContentQuery;
 
 class ContentsImport extends BaseImport
 {
     private $content_corresp;
 
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db) {
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    {
 
         parent::__construct($dispatcher, $t1db);
 
-        $this->content_corresp  = new CorrespondanceTable(CorrespondanceTable::CONTENTS, $this->t1db);
+        $this->content_corresp = new CorrespondanceTable(CorrespondanceTable::CONTENTS, $this->t1db);
 
-        $this->fld_corresp  = new CorrespondanceTable(CorrespondanceTable::FOLDERS, $this->t1db);
+        $this->fld_corresp = new CorrespondanceTable(CorrespondanceTable::FOLDERS, $this->t1db);
     }
 
-    public function getChunkSize() {
+    public function getChunkSize()
+    {
         return 10;
     }
 
@@ -60,11 +81,15 @@ class ContentsImport extends BaseImport
         $errors = 0;
 
         $hdl = $this->t1db
-                ->query(
-                        sprintf("select * from contenu order by dossier asc limit %d, %d", intval($startRecord),
-                                $this->getChunkSize()));
+            ->query(
+                sprintf(
+                    "select * from contenu order by dossier asc limit %d, %d",
+                    intval($startRecord),
+                    $this->getChunkSize()
+                )
+            );
 
-        $image_import    = new ContentImageImport($this->dispatcher, $this->t1db);
+        $image_import = new ContentImageImport($this->dispatcher, $this->t1db);
         $document_import = new ContentDocumentImport($this->dispatcher, $this->t1db);
 
         while ($hdl && $contenu = $this->t1db->fetch_object($hdl)) {
@@ -81,8 +106,7 @@ class ContentsImport extends BaseImport
                     Tlog::getInstance()->warning("Content ID=$contenu->id already imported.");
 
                     continue;
-                }
-                catch (ImportException $ex) {
+                } catch (ImportException $ex) {
                     // Okay, the content was not imported.
                 }
 
@@ -93,24 +117,32 @@ class ContentsImport extends BaseImport
                     $idx = 0;
 
                     $descs = $this->t1db
-                            ->query_list("select * from contenudesc where contenu = ? order by lang asc", array(
+                        ->query_list(
+                            "select * from contenudesc where contenu = ? order by lang asc",
+                            array(
                                 $contenu->id
-                            ));
+                            )
+                        );
 
                     foreach ($descs as $objdesc) {
 
                         $lang = $this->getT2Lang($objdesc->lang);
 
                         // A title is required to create the rewritten URL
-                        if (empty($objdesc->titre)) $objdesc->titre = sprintf("Untitled-%d-%s", $objdesc->id, $lang->getCode());
+                        if (empty($objdesc->titre)) {
+                            $objdesc->titre = sprintf(
+                                "Untitled-%d-%s",
+                                $objdesc->id,
+                                $lang->getCode()
+                            );
+                        }
 
                         if ($idx == 0) {
                             $event
                                 ->setLocale($lang->getLocale())
                                 ->setTitle($objdesc->titre)
                                 ->setDefaultFolder($dossier)
-                                ->setVisible($contenu->ligne == 1 ? true : false)
-                            ;
+                                ->setVisible($contenu->ligne == 1 ? true : false);
 
                             $this->dispatcher->dispatch(TheliaEvents::CONTENT_CREATE, $event);
 
@@ -118,11 +150,13 @@ class ContentsImport extends BaseImport
 
                             // Update position
                             $update_position_event = new UpdatePositionEvent($content_id,
-                                    UpdatePositionEvent::POSITION_ABSOLUTE, $contenu->classement);
+                                UpdatePositionEvent::POSITION_ABSOLUTE, $contenu->classement);
 
                             $this->dispatcher->dispatch(TheliaEvents::CONTENT_UPDATE_POSITION, $update_position_event);
 
-                            Tlog::getInstance()->info("Created content $content_id from $objdesc->titre ($contenu->id)");
+                            Tlog::getInstance()->info(
+                                "Created content $content_id from $objdesc->titre ($contenu->id)"
+                            );
 
                             $this->content_corresp->addEntry($contenu->id, $content_id);
 
@@ -133,7 +167,13 @@ class ContentsImport extends BaseImport
                             $document_import->importMedia($contenu->id, $content_id);
 
                             // Update the rewritten URL, if one was defined
-                            $this->updateRewrittenUrl($event->getContent(), $lang->getLocale(), $objdesc->lang, "contenu", "id_contenu=$contenu->id");
+                            $this->updateRewrittenUrl(
+                                $event->getContent(),
+                                $lang->getLocale(),
+                                $objdesc->lang,
+                                "contenu",
+                                "id_contenu=$contenu->id"
+                            );
                         }
 
                         // Update the newly created content
@@ -146,23 +186,22 @@ class ContentsImport extends BaseImport
                             ->setVisible($contenu->ligne == 1 ? true : false)
                             ->setChapo($objdesc->chapo)
                             ->setDescription($objdesc->description)
-                            ->setPostscriptum($objdesc->postscriptum)
-                        ;
+                            ->setPostscriptum($objdesc->postscriptum);
 
                         $this->dispatcher->dispatch(TheliaEvents::CONTENT_UPDATE, $update_event);
 
                         $idx++;
                     }
-                }
-                catch (ImportException $ex) {
+                } catch (ImportException $ex) {
 
                     Tlog::getInstance()->addError("Failed to create content ID=$contenu->id: ", $ex->getMessage());
 
                     $errors++;
                 }
-            }
-            else {
-                Tlog::getInstance()->addError("Cannot import content ID=$contenu->id, which is at root level (e.g., dossier parent = 0).");
+            } else {
+                Tlog::getInstance()->addError(
+                    "Cannot import content ID=$contenu->id, which is at root level (e.g., dossier parent = 0)."
+                );
 
                 $errors++;
             }

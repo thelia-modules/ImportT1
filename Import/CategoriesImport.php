@@ -1,63 +1,64 @@
 <?php
+/*************************************************************************************/
+/*                                                                                   */
+/*      Thelia 1 Database Importation Tool                                           */
+/*                                                                                   */
+/*      Copyright (c) CQFDev                                                         */
+/*      email : contact@cqfdev.fr                                                    */
+/*      web : http://www.cqfdev.fr                                                   */
+/*                                                                                   */
+/*      This program is free software; you can redistribute it and/or modify         */
+/*      it under the terms of the GNU General Public License as published by         */
+/*      the Free Software Foundation; either version 3 of the License                */
+/*                                                                                   */
+/*      This program is distributed in the hope that it will be useful,              */
+/*      but WITHOUT ANY WARRANTY; without even the implied warranty of               */
+/*      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                */
+/*      GNU General Public License for more details.                                 */
+/*                                                                                   */
+/*      You should have received a copy of the GNU General Public License            */
+/*	    along with this program. If not, see <http://www.gnu.org/licenses/>.         */
+/*                                                                                   */
+/*************************************************************************************/
+
 namespace ImportT1\Import;
 
-use Thelia\Model\AddressQuery;
-use Thelia\Model\CustomerQuery;
-use Thelia\Model\CustomerTitleQuery;
-use Thelia\Model\CustomerTitle;
-use Thelia\Core\Event\Customer\CustomerCreateOrUpdateEvent;
-use Thelia\Core\Event\TheliaEvents;
-use Thelia\Model\CategoryQuery;
+use ImportT1\Import\Media\CategoryDocumentImport;
+use ImportT1\Import\Media\CategoryImageImport;
+use ImportT1\Model\Db;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Thelia\Core\Event\Category\CategoryAddContentEvent;
 use Thelia\Core\Event\Category\CategoryCreateEvent;
 use Thelia\Core\Event\Category\CategoryUpdateEvent;
-use Thelia\Core\Event\UpdatePositionEvent;
-use Thelia\Log\Tlog;
-use Thelia\Model\Feature;
-use Thelia\Core\Event\Feature\FeatureCreateEvent;
-use Thelia\Core\Event\Feature\FeatureUpdateEvent;
-use Thelia\Model\FeatureQuery;
-use Thelia\Core\Event\Feature\FeatureAvCreateEvent;
-use Thelia\Core\Event\Feature\FeatureAvUpdateEvent;
-use Thelia\Model\FeatureAvQuery;
-use Thelia\Model\AttributeQuery;
-use Thelia\Core\Event\Attribute\AttributeCreateEvent;
-use Thelia\Core\Event\Attribute\AttributeUpdateEvent;
-use Thelia\Core\Event\Attribute\AttributeAvCreateEvent;
-use Thelia\Core\Event\Attribute\AttributeAvUpdateEvent;
-use Thelia\Model\AttributeAvQuery;
 use Thelia\Core\Event\Template\TemplateCreateEvent;
 use Thelia\Core\Event\Template\TemplateUpdateEvent;
+use Thelia\Core\Event\TheliaEvents;
+use Thelia\Core\Event\UpdatePositionEvent;
+use Thelia\Log\Tlog;
 use Thelia\Model\AttributeTemplate;
-use Thelia\Model\FeatureTemplate;
-use Thelia\Model\TemplateQuery;
-use Thelia\Model\FeatureTemplateQuery;
 use Thelia\Model\AttributeTemplateQuery;
-use Thelia\Model\ProductQuery;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use ImportT1\Model\Db;
-use Symfony\Component\Filesystem\Filesystem;
-use Thelia\Model\CategoryImage;
-use Thelia\Model\CategoryDocument;
-use Thelia\Model\CategoryImageQuery;
-use Thelia\Model\CategoryDocumentQuery;
-use ImportT1\Import\Media\CategoryImageImport;
-use ImportT1\Import\Media\CategoryDocumentImport;
-use Thelia\Model\CategoryAssociatedContent;
-use Thelia\Core\Event\Category\CategoryAddContentEvent;
 use Thelia\Model\CategoryAssociatedContentQuery;
+use Thelia\Model\CategoryDocumentQuery;
+use Thelia\Model\CategoryImageQuery;
+use Thelia\Model\CategoryQuery;
+use Thelia\Model\FeatureTemplate;
+use Thelia\Model\FeatureTemplateQuery;
+use Thelia\Model\ProductQuery;
+use Thelia\Model\TemplateQuery;
 
 class CategoriesImport extends BaseImport
 {
 
-    private $cat_corresp, $attr_corresp, $feat_corresp, $tpl_corresp;
+    private $cat_corresp, $attr_corresp, $feat_corresp, $tpl_corresp, $content_corresp;
 
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db) {
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    {
 
         parent::__construct($dispatcher, $t1db);
 
-        $this->cat_corresp  = new CorrespondanceTable(CorrespondanceTable::CATEGORIES, $this->t1db);
-        $this->tpl_corresp  = new CorrespondanceTable(CorrespondanceTable::TEMPLATES, $this->t1db);
+        $this->cat_corresp = new CorrespondanceTable(CorrespondanceTable::CATEGORIES, $this->t1db);
+        $this->tpl_corresp = new CorrespondanceTable(CorrespondanceTable::TEMPLATES, $this->t1db);
 
         $this->attr_corresp = new CorrespondanceTable(CorrespondanceTable::ATTRIBUTES, $this->t1db);
         $this->feat_corresp = new CorrespondanceTable(CorrespondanceTable::FEATURES, $this->t1db);
@@ -65,7 +66,8 @@ class CategoriesImport extends BaseImport
         $this->content_corresp = new CorrespondanceTable(CorrespondanceTable::CONTENTS, $this->t1db);
     }
 
-    public function getChunkSize() {
+    public function getChunkSize()
+    {
         return 10;
     }
 
@@ -103,11 +105,15 @@ class CategoriesImport extends BaseImport
         $errors = 0;
 
         $hdl = $this->t1db
-                ->query(
-                        sprintf("select * from rubrique order by parent asc limit %d, %d", intval($startRecord),
-                                $this->getChunkSize()));
+            ->query(
+                sprintf(
+                    "select * from rubrique order by parent asc limit %d, %d",
+                    intval($startRecord),
+                    $this->getChunkSize()
+                )
+            );
 
-        $image_import    = new CategoryImageImport($this->dispatcher, $this->t1db);
+        $image_import = new CategoryImageImport($this->dispatcher, $this->t1db);
         $document_import = new CategoryDocumentImport($this->dispatcher, $this->t1db);
 
         while ($hdl && $rubrique = $this->t1db->fetch_object($hdl)) {
@@ -120,8 +126,7 @@ class CategoriesImport extends BaseImport
                 Tlog::getInstance()->warning("Category ID=$rubrique->id already imported.");
 
                 continue;
-            }
-            catch (ImportException $ex) {
+            } catch (ImportException $ex) {
                 // Okay, the category was not imported.
             }
 
@@ -132,16 +137,25 @@ class CategoriesImport extends BaseImport
                 $idx = 0;
 
                 $descs = $this->t1db
-                        ->query_list("select * from rubriquedesc where rubrique = ? order by lang asc", array(
+                    ->query_list(
+                        "select * from rubriquedesc where rubrique = ? order by lang asc",
+                        array(
                             $rubrique->id
-                        ));
+                        )
+                    );
 
                 foreach ($descs as $objdesc) {
 
                     $lang = $this->getT2Lang($objdesc->lang);
 
                     // A title is required to create the rewritten URL
-                    if (empty($objdesc->titre)) $objdesc->titre = sprintf("Untitled-%d-%s", $objdesc->id, $lang->getCode());
+                    if (empty($objdesc->titre)) {
+                        $objdesc->titre = sprintf(
+                            "Untitled-%d-%s",
+                            $objdesc->id,
+                            $lang->getCode()
+                        );
+                    }
 
                     $parent = $rubrique->parent > 0 ? $rubrique->parent + 1000000 : 0;
 
@@ -150,8 +164,7 @@ class CategoriesImport extends BaseImport
                             ->setLocale($lang->getLocale())
                             ->setTitle($objdesc->titre)
                             ->setParent($parent) // Will be corrected later
-                            ->setVisible($rubrique->ligne == 1 ? true : false)
-                        ;
+                            ->setVisible($rubrique->ligne == 1 ? true : false);
 
                         $this->dispatcher->dispatch(TheliaEvents::CATEGORY_CREATE, $event);
 
@@ -161,7 +174,7 @@ class CategoriesImport extends BaseImport
                         // ---------------
 
                         $update_position_event = new UpdatePositionEvent($category_id,
-                                UpdatePositionEvent::POSITION_ABSOLUTE, $rubrique->classement);
+                            UpdatePositionEvent::POSITION_ABSOLUTE, $rubrique->classement);
 
                         $this->dispatcher->dispatch(TheliaEvents::CATEGORY_UPDATE_POSITION, $update_position_event);
 
@@ -175,16 +188,18 @@ class CategoriesImport extends BaseImport
                         $tpl_update = null;
 
                         $feature_list = $this->t1db
-                                ->query_list("select caracteristique from rubcaracteristique where rubrique=$rubrique->id");
+                            ->query_list("select caracteristique from rubcaracteristique where rubrique=$rubrique->id");
 
                         $attribute_list = $this->t1db
-                                ->query_list("select declinaison from rubdeclinaison where rubrique=$rubrique->id");
+                            ->query_list("select declinaison from rubdeclinaison where rubrique=$rubrique->id");
 
                         if (!empty($attribute_list) || !empty($feature_list)) {
 
                             $tpl_create = new TemplateCreateEvent();
 
-                            $tpl_create->setLocale($lang->getLocale())->setTemplateName($objdesc->titre . " (generated by import)");
+                            $tpl_create->setLocale($lang->getLocale())->setTemplateName(
+                                $objdesc->titre . " (generated by import)"
+                            );
 
                             $this->dispatcher->dispatch(TheliaEvents::TEMPLATE_CREATE, $tpl_create);
 
@@ -199,12 +214,12 @@ class CategoriesImport extends BaseImport
 
                                 try {
                                     $attribute_template->setAttributeId($id)->setTemplateId($tpl_id)->save();
-                                }
-                                catch (\Exception $ex) {
+                                } catch (\Exception $ex) {
                                     Tlog::getInstance()
-                                            ->addError(
-                                                    "Failed to create template attribute for T1 caractéristique $attr->declinaison : ",
-                                                    $ex->getMessage());
+                                        ->addError(
+                                            "Failed to create template attribute for T1 caractéristique $attr->declinaison : ",
+                                            $ex->getMessage()
+                                        );
 
                                     $errors++;
                                 }
@@ -217,12 +232,12 @@ class CategoriesImport extends BaseImport
                                     $id = $this->feat_corresp->getT2($feat->caracteristique);
 
                                     $feature_template->setFeatureId($id)->setTemplateId($tpl_id)->save();
-                                }
-                                catch (\Exception $ex) {
+                                } catch (\Exception $ex) {
                                     Tlog::getInstance()
-                                            ->addError(
-                                                    "Failed to create template feature for T1 declinaison $feat->caracteristique : ",
-                                                    $ex->getMessage());
+                                        ->addError(
+                                            "Failed to create template feature for T1 declinaison $feat->caracteristique : ",
+                                            $ex->getMessage()
+                                        );
 
                                     $errors++;
                                 }
@@ -234,20 +249,23 @@ class CategoriesImport extends BaseImport
                         // Import related content
                         // ----------------------
                         $contents = $this->t1db->query_list(
-                                "select * from contenuassoc where objet=? and type=0 order by classement", array($rubrique->id)); // type: 1 = produit, 0=rubrique
+                            "select * from contenuassoc where objet=? and type=0 order by classement",
+                            array($rubrique->id)
+                        ); // type: 1 = produit, 0=rubrique
 
-                        foreach($contents as $content) {
+                        foreach ($contents as $content) {
 
                             try {
-                                $content_event = new CategoryAddContentEvent($event->getCategory(), $this->content_corresp->getT2($content->contenu));
+                                $content_event = new CategoryAddContentEvent($event->getCategory(
+                                ), $this->content_corresp->getT2($content->contenu));
 
                                 $this->dispatcher->dispatch(TheliaEvents::CATEGORY_ADD_CONTENT, $content_event);
-                             }
-                            catch (\Exception $ex) {
+                            } catch (\Exception $ex) {
                                 Tlog::getInstance()
                                     ->addError(
                                         "Failed to create associated content $content->contenu for category $category_id: ",
-                                        $ex->getMessage());
+                                        $ex->getMessage()
+                                    );
 
                                 $errors++;
                             }
@@ -260,7 +278,13 @@ class CategoriesImport extends BaseImport
                         $document_import->importMedia($rubrique->id, $category_id);
 
                         // Update the rewritten URL
-                        $this->updateRewrittenUrl($event->getCategory(), $lang->getLocale(), $objdesc->lang, "rubrique", "id_rubrique=$rubrique->id");
+                        $this->updateRewrittenUrl(
+                            $event->getCategory(),
+                            $lang->getLocale(),
+                            $objdesc->lang,
+                            "rubrique",
+                            "id_rubrique=$rubrique->id"
+                        );
                     }
 
                     // Update the newly created category
@@ -273,8 +297,7 @@ class CategoriesImport extends BaseImport
                         ->setVisible($rubrique->ligne == 1 ? true : false)
                         ->setChapo($objdesc->chapo)
                         ->setDescription($objdesc->description)
-                        ->setPostscriptum($objdesc->postscriptum)
-                    ;
+                        ->setPostscriptum($objdesc->postscriptum);
 
                     $this->dispatcher->dispatch(TheliaEvents::CATEGORY_UPDATE, $update_event);
 
@@ -282,15 +305,16 @@ class CategoriesImport extends BaseImport
                     // -----------------------------------------------
 
                     if ($tpl_update !== null) {
-                        $tpl_update->setLocale($lang->getLocale())->setTemplateName($objdesc->titre . " (generated by import)");
+                        $tpl_update->setLocale($lang->getLocale())->setTemplateName(
+                            $objdesc->titre . " (generated by import)"
+                        );
 
                         $this->dispatcher->dispatch(TheliaEvents::TEMPLATE_UPDATE, $tpl_update);
                     }
 
                     $idx++;
                 }
-            }
-            catch (ImportException $ex) {
+            } catch (ImportException $ex) {
 
                 Tlog::getInstance()->addError("Failed to create category: ", $ex->getMessage());
 

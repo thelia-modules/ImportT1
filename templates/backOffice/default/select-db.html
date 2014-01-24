@@ -8,53 +8,63 @@
 </div>
 
 {if $error_message}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="alert alert-danger">{$error_message}</div>
-        </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-danger">{$error_message}</div>
     </div>
+</div>
 {/if}
 
 <form method="POST" action="{url path='/admin/module/ImportT1/check-db'}">
-	<div class="row">
-	    <div class="col-md-12">
-	        <p>{intl l="The import process needs an access to your Thelia 1 database. This could be the real (live) database, but is is safer to make a copy of this database (e.g. an export / import), and start the import on this copy."}</p>
-	        <p>{intl l="Please enter below the required information to access the Thelai 1 database."}</p>
-	    </div>
-	</div>
-
     <div class="row">
-        <div class="col-md-4">
-		    <div class="form-group ">
-			   <label class="control-label" for="title">{intl l='Database hostname'}</label>
-		        <input type="text" placeholder="Hostname" title="Hostname" value="{$hostname}" class="form-control" name="hostname" required="required" id="hostname">
-		 	</div>
+        <div class="col-md-12">
+            <p>{intl l="The import process needs an access to your Thelia 1 database. This could be the real (live)
+                database, but is is safer to make a copy of this database (e.g. an export / import), and start the
+                import on this copy."}</p>
 
-		    <div class="form-group ">
-		       <label class="control-label" for="dnbame">{intl l='Name of the database'}</label>
-		        <input type="text" placeholder="Database name" title="Database Name" value="{$dbname}" class="form-control" name="dbname" required="required" id="dbname">
-		    </div>
-
-		    <div class="form-group ">
-		       <label class="control-label" for="username">{intl l='Database Username'}</label>
-		        <input type="text" placeholder="Database user name" title="User name" value="{$username}" class="form-control" name="username" required="required" id="username">
-		    </div>
-
-		    <div class="form-group ">
-		       <label class="control-label" for="password">{intl l='Database Password'}</label>
-		        <input type="text" placeholder="Database password" title="Database password" value="{$password}" class="form-control" name="password" id="password">
-		    </div>
+            <p>{intl l="Please enter below the required information to access the Thelai 1 database."}</p>
         </div>
     </div>
 
-	<div class="row">
-	    <div class="col-md-7 title">{intl l="Where can I find images and documents ?"}</div>
-	</div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group ">
+                <label class="control-label" for="title">{intl l='Database hostname'}</label>
+                <input type="text" placeholder="Hostname" title="Hostname" value="{$hostname}" class="form-control"
+                       name="hostname" required="required" id="hostname">
+            </div>
+
+            <div class="form-group ">
+                <label class="control-label" for="dnbame">{intl l='Name of the database'}</label>
+                <input type="text" placeholder="Database name" title="Database Name" value="{$dbname}"
+                       class="form-control" name="dbname" required="required" id="dbname">
+            </div>
+
+            <div class="form-group ">
+                <label class="control-label" for="username">{intl l='Database Username'}</label>
+                <input type="text" placeholder="Database user name" title="User name" value="{$username}"
+                       class="form-control" name="username" required="required" id="username">
+            </div>
+
+            <div class="form-group ">
+                <label class="control-label" for="password">{intl l='Database Password'}</label>
+                <input type="text" placeholder="Database password" title="Database password" value="{$password}"
+                       class="form-control" name="password" id="password">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-7 title">{intl l="Where can I find images and documents ?"}</div>
+    </div>
 
     <div class="row">
         <div class="col-md-12">
-            <p> {intl l="If you want to import images and documents, please enter here the absolute path to the 'client' directory of your Thelia 1 installation.
-            The required folders are client/gfx, client/document and client/commandes, this is the only ones you need to copy on this machine if your Thelia 1 installation is on a remote machine."}</p>
+            <p> {intl l="If you want to import images and documents, please enter here the absolute path to the 'client'
+                directory of your Thelia 1 installation.
+                The required folders are client/gfx, client/document and client/commandes, this is the only ones you
+                need to copy on this machine if your Thelia 1 installation is on a remote machine."}</p>
+
             <p>{intl l="If you don't want to import documents, just leave this field empty."}</p>
         </div>
     </div>
@@ -62,8 +72,9 @@
     <div class="row">
         <div class="col-md-6">
             <div class="form-group ">
-               <label class="control-label" for="client_directory">{intl l='Thelia 1 "client" directory path'}</label>
-                <input type="text" placeholder="Client directory path" title="Client directory path" value="{$client_directory}" class="form-control" name="client_directory" id="client_directory">
+                <label class="control-label" for="client_directory">{intl l='Thelia 1 "client" directory path'}</label>
+                <input type="text" placeholder="Client directory path" title="Client directory path"
+                       value="{$client_directory}" class="form-control" name="client_directory" id="client_directory">
             </div>
         </div>
     </div>
@@ -71,10 +82,12 @@
     <div class="row">
         <div class="col-md-12">
             <div class="btn-toolbar" role="toolbar">
-            <a href="{url path='/admin/module/ImportT1'}" class="btn btn-default"><span class="glyphicon glyphicon-backward"></span> {intl l="Previous"}</a>
-            <button type="submit" class="btn btn-primary pull-right">{intl l="Next"} <span class="glyphicon glyphicon-forward"></span></button>
+                <a href="{url path='/admin/module/ImportT1'}" class="btn btn-default"><span
+                        class="glyphicon glyphicon-backward"></span> {intl l="Previous"}</a>
+                <button type="submit" class="btn btn-primary pull-right">{intl l="Next"} <span
+                        class="glyphicon glyphicon-forward"></span></button>
             </div>
-		</div>
-	</div>
+        </div>
+    </div>
 </form>
 {/block}

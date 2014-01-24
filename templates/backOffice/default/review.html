@@ -19,9 +19,9 @@
             <li>{intl l="Thelia 1 client directory path : "}
                 <strong>{if empty($client_directory)}
                     {intl l="Not specified - images and documents will not be imported."}
-                {else}
+                    {else}
                     {$client_directory}
-                {/if}
+                    {/if}
                 </strong>
             </li>
         </ul>
@@ -31,9 +31,11 @@
 <div class="row">
     <div class="col-md-12">
         <div class="btn-toolbar" role="toolbar">
-		    <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-default"><span class="glyphicon glyphicon-backward"></span> {intl l="Previous"}</a>
-		    <a href="{url path='/admin/module/ImportT1/customers'}" class="btn btn-primary pull-right">{intl l="Next"} <span class="glyphicon glyphicon-forward"></span></a>
-		</div>
+            <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-default"><span
+                    class="glyphicon glyphicon-backward"></span> {intl l="Previous"}</a>
+            <a href="{url path='/admin/module/ImportT1/customers'}" class="btn btn-primary pull-right">{intl l="Next"}
+                <span class="glyphicon glyphicon-forward"></span></a>
+        </div>
     </div>
 </div>
 {/block}

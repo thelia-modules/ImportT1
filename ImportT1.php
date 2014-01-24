@@ -1,11 +1,11 @@
 <?php
 /*************************************************************************************/
 /*                                                                                   */
-/*      Thelia	                                                                     */
+/*      Thelia 1 Database Importation Tool                                           */
 /*                                                                                   */
-/*      Copyright (c) OpenStudio                                                     */
-/*      email : info@thelia.net                                                      */
-/*      web : http://www.thelia.net                                                  */
+/*      Copyright (c) CQFDev                                                         */
+/*      email : contact@cqfdev.fr                                                    */
+/*      web : http://www.cqfdev.fr                                                   */
 /*                                                                                   */
 /*      This program is free software; you can redistribute it and/or modify         */
 /*      it under the terms of the GNU General Public License as published by         */

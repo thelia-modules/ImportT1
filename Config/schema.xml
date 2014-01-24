@@ -3,5 +3,5 @@
     <!--
     See propel documentation on http://propelorm.org for all information about schema file
     -->
-    <external-schema filename="E:\Dev\Thelia\Thelia2\thelia\local\config\schema.xml" referenceOnly="true" />
+    <external-schema filename="E:\Dev\Thelia\Thelia2\thelia\local\config\schema.xml" referenceOnly="true"/>
 </database>
