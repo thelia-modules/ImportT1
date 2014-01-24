@@ -54,6 +54,9 @@ class Db
         );
     }
 
+    /**
+     * @return DatabaseInfo
+     */
     public function getDbInfo()
     {
         return $this->request->getSession()->get('importt1-database-info', new DatabaseInfo());

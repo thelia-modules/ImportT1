@@ -3,3 +3,7 @@
     padding-top: 1em;
     border-top: 1px dotted #ccc;
 }
+
+.errors {
+    font-family: Consolas, "Courier New", Courier, monospace;
+}

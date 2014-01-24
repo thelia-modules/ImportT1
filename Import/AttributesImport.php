@@ -29,6 +29,7 @@ use Thelia\Core\Event\Attribute\AttributeCreateEvent;
 use Thelia\Core\Event\Attribute\AttributeUpdateEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\UpdatePositionEvent;
+use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
 use Thelia\Model\AttributeAvQuery;
 use Thelia\Model\AttributeQuery;
@@ -39,9 +40,15 @@ class AttributesImport extends BaseImport
     private $attr_corresp;
     private $attr_av_corresp;
 
+
     public function getTotalCount()
     {
-        return 0;
+        return $this->t1db->num_rows($this->t1db->query("select id from declinaison"));
+    }
+
+    public function getChunkSize()
+    {
+        return $this->getTotalCount();
     }
 
     public function preImport()
@@ -211,7 +218,8 @@ class AttributesImport extends BaseImport
 
                     $idx++;
                 } catch (\Exception $ex) {
-                    Tlog::getInstance()->addError("Failed to create Attribute Av: ", $ex->getMessage());
+                    Tlog::getInstance()->addError(
+                        Translator::getInstance()->trans("Failed to create Attribute Av: %ex", array("%ex" => $ex->getMessage())));
 
                     $errors++;
                 }

@@ -72,6 +72,8 @@ class ProductsImport extends BaseImport
 
         $this->attr_corresp = new CorrespondanceTable(CorrespondanceTable::ATTRIBUTES, $this->t1db);
         $this->attr_av_corresp = new CorrespondanceTable(CorrespondanceTable::ATTRIBUTES_AV, $this->t1db);
+
+        $this->content_corresp = new CorrespondanceTable(CorrespondanceTable::CONTENTS, $this->t1db);
     }
 
     public function getChunkSize()
@@ -358,14 +360,18 @@ class ProductsImport extends BaseImport
                                         array($declidisp->id, $produit->id)
                                     );
 
-                                    if (count($disabled) > 0) continue;
+                                    if (count($disabled) > 0) {
+                                        continue;
+                                    }
 
                                     $stock = $this->t1db->query_obj(
                                         "select * from stock where declidisp=?and produit=?",
                                         array($declidisp->id, $produit->id)
                                     );
 
-                                    if ($stock == false) continue;
+                                    if ($stock == false) {
+                                        continue;
+                                    }
 
                                     try {
                                         $pse_create_event = new ProductSaleElementCreateEvent(
@@ -481,7 +487,9 @@ class ProductsImport extends BaseImport
                 }
             }
 
-            if (!$found) $taux_tvas[] = $tvp;
+            if (!$found) {
+                $taux_tvas[] = $tvp;
+            }
         }
 
         $langs = LangQuery::create()->find();

@@ -10,23 +10,20 @@
 <div class="row">
     <div class="col-md-12">
         {if $reload}
-        {$view_start=$start+1}
-        {$end=$start+$chunk_size}
-        <p>{intl l="Please wait, currently processing elements %start to %end" start=$view_start end=$end
-            object=$object}</p>
+            {$view_start=$start+1}
+            {$end=$start+$chunk_size}
+            <p>{intl l="Please wait, currently processing elements %start to %end" start=$view_start end=$end
+                object=$object}</p>
 
-        <p>{intl l="%start imported elements on %total total, %remaining to go, %errors error(s) for now (<a
-                href=\"%log_url\" target=\"_log\">view log file</a>)." errors=$errors start=$start object=$object
-            remaining=$remaining total=$total log_url={url path='/admin/module/ImportT1/show-log'}}</p>
+            <p>{intl l="%start imported elements on %total total, %remaining to go, %errors error(s) for now (<a href=\"%log_url\" target=\"_log\">view log file</a>)." errors=$errors start=$start object=$object
+                remaining=$remaining total=$total log_url={url path='/admin/module/ImportT1/show-log'}}</p>
 
-        <p>{intl l="This page will reload until all elements have beeen imported, please do not close your
-            browser."}</p>
+            <p>{intl l="This page will reload until all elements have beeen imported, please do not close your browser."}</p>
         {else}
-        <p>{intl l="%total elements have been processed." object=$object total=$total}</p>
-        {if $errors > 0}
-        <p>{intl l="Total errors detected: %errors. Please <a href=\"%log_url\" target=\"_log\">check the log file</a>
-            for details." object=$object errors=$errors log_url={url path='/admin/module/ImportT1/show-log'}}</p>
-        {/if}
+            <p>{intl l="%total elements have been processed." object=$object total=$total}</p>
+            {if $errors > 0}
+                <p>{intl l="Total errors detected: %errors. Please <a href=\"%log_url\" target=\"_log\">check the log file</a> for details." object=$object errors=$errors log_url={url path='/admin/module/ImportT1/show-log'}}</p>
+            {/if}
         {/if}
     </div>
 </div>
@@ -34,26 +31,44 @@
 <div class="row">
     <div class="col-md-12">
         <div class="btn-toolbar" role="toolbar">
-            {if $reload}
-            <a href="{url path='/admin/module/ImportT1/review'}" class="btn btn-danger"><span
-                    class="glyphicon glyphicon-remove"></span> {intl l="Cancel"}</a>
-            {else}
-            <a href="{$startover_route}" class="btn btn-info"><span class="glyphicon glyphicon-refresh"></span> {intl
-                l="Start Over"}</a>
-            <a href="{$next_route}" class="btn btn-primary pull-right">{intl l="Next"} <span
-                    class="glyphicon glyphicon-forward"></span></a>
-            {/if}
+            <a href="#" class="btn btn-danger stop"><span class="glyphicon glyphicon-remove"></span> {intl l="Stop"}</a>
+            <div class="continue"  style="display:none">
+                <a href="{$startover_route}" class="btn btn-info"><span class="glyphicon glyphicon-refresh"></span> {intl l="Start Over"}</a>
+                <a href="#" class="btn btn-primary continue"><span class="glyphicon glyphicon-forward"></span> {intl l="Resume"}</a>
+            </div>
         </div>
     </div>
 </div>
 {/block}
 
 {block name="javascript-initialization"}
-{if $reload}
+
 <script>
     $(function () {
+         $('.stop').click(function(ev) {
+            try {
+                window.stop();
+            }
+            catch (ex) {
+                document.execCommand("Stop");
+            }
+            $(this).hide();
+            $('.continue').show();
+            ev.preventDefault();
+        });
+
+        $('.continue').click(function(ev) {
+            $('.continue').hide();
+            $('.stop').show();
+            window.location.reload();
+            ev.preventDefault();
+        });
+
+        {if $reload}
         window.location.href = '{url path="/admin/module/ImportT1/$object/$start/$errors"}';
+        {else}
+        window.location.href = '{$next_route}';
+        {/if}
     });
 </script>
-{/if}
 {/block}

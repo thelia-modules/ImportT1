@@ -25,6 +25,16 @@
                 </strong>
             </li>
         </ul>
+
+        <div class="well well-sm">{intl l="<strong>IMPORTANT:</strong> If you get an error saying 'Maximum execution time of nn seconds excedeed', just reload the page (hit F5), and the import process will continue."}</div>
+
+        <p>
+            {intl l="During a long import, you can hit the \"Stop\" button at any time to stop the importation."}<br />
+            {intl l="A \"Start Over\" button will appear. This button restarts from the beginning the current importation (e.g. customers, features, or products, etc.) but not the whole process."}<br />
+            {intl l="A \"Resume\" button is also displayed. It will continue the process where it was interrupted."}
+        </p>
+
+        <p>Things will be a bit messy during the import, do no try to use your shop during this time</p>
     </div>
 </div>
 
@@ -33,9 +43,22 @@
         <div class="btn-toolbar" role="toolbar">
             <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-default"><span
                     class="glyphicon glyphicon-backward"></span> {intl l="Previous"}</a>
-            <a href="{url path='/admin/module/ImportT1/customers'}" class="btn btn-primary pull-right">{intl l="Next"}
+            <a href="{url path='/admin/module/ImportT1/customer/0/0'}" class="btn btn-primary pull-right next">{intl l="Next"}
                 <span class="glyphicon glyphicon-forward"></span></a>
         </div>
     </div>
 </div>
+{/block}
+
+{block name="javascript-initialization"}
+
+<script>
+    $(function () {
+        $('.next').click(function(ev) {
+            $(this).prop('disabled', true);
+            $(this).text("{intl l="Please wait, working..."}");
+        });
+    });
+</script>
+
 {/block}

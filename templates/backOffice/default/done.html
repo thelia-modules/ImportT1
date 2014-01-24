@@ -1,0 +1,28 @@
+{extends file="importt1.tpl"}
+
+{block name="step"}{intl l='Import finished'}{/block}
+
+{block name="inner-content"}
+    <div class="row">
+        <div class="col-md-7 title">{intl l="Congratulations, your import is now finished"}</div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <p>{intl l="The Thelia 1 database has been imported successfully."}</p>
+
+            {if ! empty($errors)}
+                <p>{intl l="However, <strong>{$total_errors} errors have been detected</strong>, please review them below. In most case, your database is consistent, but some informations have not been imported."}</p>
+            {/if}
+
+
+            <p>{intl l="You can check the whole import process in <a href=\"%log_url\" target=\"_log\">the log file</a>." log_url={url path='/admin/module/ImportT1/show-log'}}</p>
+
+            <p>{intl l="Thank you for using Thelia 2 !"}</p>
+
+            {if ! empty($errors)}
+                <div class="errors well well-sm">{$errors nofilter}</div>
+            {/if}
+        </div>
+    </div>
+{/block}

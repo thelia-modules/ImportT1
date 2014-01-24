@@ -10,6 +10,7 @@ use ImportT1\Import\FoldersImport;
 use ImportT1\Import\OrdersImport;
 use ImportT1\Import\ProductsImport;
 use ImportT1\Model\DatabaseInfo;
+use ImportT1\Model\Db;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Security\AccessManager;
@@ -39,6 +40,7 @@ class ImportT1Controller extends BaseAdminController
             ->setLevel(Tlog::INFO)
             ->setDestinations($destination)
             ->setConfig($destination, TlogDestinationFile::VAR_PATH_FILE, $this->log_file)
+            ->setConfig($destination, TlogDestinationFile::VAR_MAX_FILE_SIZE_KB, 20*1024)
             ->setFiles('*')
             ->setPrefix('[#LEVEL] #DATE #HOUR:');
     }
@@ -90,7 +92,7 @@ class ImportT1Controller extends BaseAdminController
                     $version = $db->fetch_column($hdl);
 
                     if (intval(substr($version, 0, 3)) < self::MIN_VERSION) {
-                        $error_message = Translator::getInstance()->trans(
+                        $error_message = $this->getTranslator()->trans(
                             "A Thelia %version database was found. Unfortunately, only Thelia 1.5.1 or newer databases may be imported. Please upgrade this Thelia 1 installation up to the latest available Thelia 1 version.",
                             array("%version" => rtrim(preg_replace("/(.)/", "$1.", $version), "."))
                         );
@@ -103,7 +105,7 @@ class ImportT1Controller extends BaseAdminController
                             // Check the "client" path
                             if (!is_dir($dbinfo->getClientDirectory())) {
                                 $error_message =
-                                    Translator::getInstance()->trans(
+                                    $this->getTranslator()->trans(
                                         "The directory %dir was not found. Please check your input and try again.",
                                         array("%dir" => $dbinfo->getClientDirectory())
                                     );
@@ -112,7 +114,7 @@ class ImportT1Controller extends BaseAdminController
 
                                 if (!is_dir($photos_dir)) {
                                     $error_message =
-                                        Translator::getInstance()->trans(
+                                        $this->getTranslator()->trans(
                                             "No Thelia 1 image directory can be found in %dir directory.",
                                             array("%dir" => $dbinfo->getClientDirectory())
                                         );
@@ -121,13 +123,13 @@ class ImportT1Controller extends BaseAdminController
                         }
                     }
                 } catch (Exception $ex) {
-                    $error_message = Translator::getInstance()->trans(
+                    $error_message = $this->getTranslator()->trans(
                         "No Thelia 1 database was found in this database. Please check your input and try again."
                     );
                 }
 
             } catch (\Exception $ex) {
-                $error_message = Translator::getInstance()->trans(
+                $error_message = $this->getTranslator()->trans(
                     "Failed to connect to database using the parameters below. Please check your input and try again"
                 );
             }
@@ -141,6 +143,9 @@ class ImportT1Controller extends BaseAdminController
         return $this->redirectToRoute("importT1.review");
     }
 
+    /**
+     * @return Db
+     */
     protected function getDb()
     {
         return $this->container->get('importt1.db');
@@ -198,27 +203,7 @@ class ImportT1Controller extends BaseAdminController
         return $resp;
     }
 
-    public function importCustomersAction($start = 0, $errors = 0)
-    {
-        // This is the first import: let's clear the log file
-        if ($start == 0) {
-            if ($fh = @fopen($this->log_file, 'w')) {
-                fclose($fh);
-            }
-        }
-
-        return $this->genericImport(
-            new CustomersImport($this->getDispatcher(), $this->getDb()),
-            Translator::getInstance()->trans("Customer importation"),
-            'customer',
-            $this->getRoute('importT1.start.folders'),
-            $this->getRoute('importT1.start.customers'),
-            $start,
-            $errors
-        );
-    }
-
-    protected function genericImport($importer, $title, $object, $next_route, $startover_route, $start = 0, $errors = 0)
+    protected function genericImport($importer, $title, $object, $next_route, $startover_route, $start = 0, $total_errors= 0)
     {
         try {
             if ($start == 0) {
@@ -229,7 +214,7 @@ class ImportT1Controller extends BaseAdminController
 
             $result = $importer->import($start);
 
-            $errors += $result->getErrors();
+            $errors = $total_errors + $result->getErrors();
 
             $next_start = $start + $result->getCount();
 
@@ -250,8 +235,8 @@ class ImportT1Controller extends BaseAdminController
                     'start' => $next_start,
                     'remaining' => $remaining,
                     'reload' => $remaining > 0,
-                    'next_route' => $next_route,
-                    'startover_route' => $startover_route
+                    'next_route' => $this->getRoute($next_route, array('start' => 0, 'total_errors' => $errors)),
+                    'startover_route' =>  $this->getRoute($startover_route, array('start' => 0, 'total_errors' => $errors))
                 )
             );
         } catch (\Exception $ex) {
@@ -264,108 +249,143 @@ class ImportT1Controller extends BaseAdminController
         }
     }
 
-    public function importFoldersAction($start = 0, $errors = 0)
+    public function importCustomersAction($start = 0, $total_errors= 0)
+    {
+        // This is the first import: let's clear the log file
+        if ($start == 0) {
+            if ($fh = @fopen($this->log_file, 'w')) {
+                fclose($fh);
+            }
+
+            Tlog::getInstance()->info("Started Thelia DB Import");
+        }
+
+        return $this->genericImport(
+            new CustomersImport($this->getDispatcher(), $this->getDb()),
+            $this->getTranslator()->trans("Customer importation"),
+            'customer',
+            'importT1.folder',
+            'importT1.customer',
+            $start,
+            $total_errors
+        );
+    }
+
+    public function importFoldersAction($start = 0, $total_errors= 0)
     {
         return $this->genericImport(
             new FoldersImport($this->getDispatcher(), $this->getDb()),
-            Translator::getInstance()->trans("Folders importation"),
+            $this->getTranslator()->trans("Folders importation"),
             'folder',
-            $this->getRoute('importT1.start.contents'),
-            $this->getRoute('importT1.start.folders'),
+            'importT1.content',
+            'importT1.folder',
             $start,
-            $errors
+            $total_errors
         );
     }
 
-    public function importContentsAction($start = 0, $errors = 0)
+    public function importContentsAction($start = 0, $total_errors= 0)
     {
         return $this->genericImport(
             new ContentsImport($this->getDispatcher(), $this->getDb()),
-            Translator::getInstance()->trans("Contents importation"),
+            $this->getTranslator()->trans("Contents importation"),
             'content',
-            $this->getRoute('importT1.features'),
-            $this->getRoute('importT1.start.contents'),
+            'importT1.feature',
+            'importT1.content',
             $start,
-            $errors
+            $total_errors
         );
     }
 
-    public function importFeaturesAction($start = 0, $errors = 0)
+    public function importFeaturesAction($start = 0, $total_errors= 0)
     {
-        return $this->genericSingleStepImport(
+        return $this->genericImport(
             new FeaturesImport($this->getDispatcher(), $this->getDb()),
-            'Features',
-            $this->getRoute('importT1.attributes'),
-            $this->getRoute('importT1.features')
+            $this->getTranslator()->trans("Features importation"),
+            'feature',
+            'importT1.attribute',
+            'importT1.feature',
+            $start,
+            $total_errors
         );
-    }
+     }
 
-    public function genericSingleStepImport($importer, $object, $next_route, $startover_route)
+    public function importAttributesAction($start = 0, $total_errors= 0)
     {
-        $importer->preImport();
-
-        $result = $importer->import();
-
-        $importer->postImport();
-
-        return $this->render(
-            'single-step-importer',
-            array(
-                'object' => $object,
-                'total' => $result->getCount(),
-                'errors' => $result->getErrors(),
-                'next_route' => $next_route,
-                'startover_route' => $startover_route
-            )
-        );
-    }
-
-    public function importAttributesAction($start = 0, $errors = 0)
-    {
-        return $this->genericSingleStepImport(
+        return $this->genericImport(
             new AttributesImport($this->getDispatcher(), $this->getDb()),
-            'Attributes',
-            $this->getRoute('importT1.start.categories'),
-            $this->getRoute('importT1.attributes')
+            $this->getTranslator()->trans("Attributes importation"),
+            'attribute',
+            'importT1.categorie',
+            'importT1.attribute',
+            $start,
+            $total_errors
         );
     }
 
-    public function importCategoriesAction($start = 0, $errors = 0)
+    public function importCategoriesAction($start = 0, $total_errors= 0)
     {
         return $this->genericImport(
             new CategoriesImport($this->getDispatcher(), $this->getDb()),
-            Translator::getInstance()->trans("Categories importation"),
+            $this->getTranslator()->trans("Categories importation"),
             'category',
-            $this->getRoute('importT1.start.products'),
-            $this->getRoute('importT1.start.categories'),
+            'importT1.product',
+            'importT1.categorie',
             $start,
-            $errors
+            $total_errors
         );
     }
 
-    public function importProductsAction($start = 0, $errors = 0)
+    public function importProductsAction($start = 0, $total_errors= 0)
     {
         return $this->genericImport(
             new ProductsImport($this->getDispatcher(), $this->getDb()),
-            Translator::getInstance()->trans("Products importation"),
+            $this->getTranslator()->trans("Products importation"),
             'product',
-            $this->getRoute('importT1.start.orders'),
-            $this->getRoute('importT1.start.products'),
+            'importT1.order',
+            'importT1.product',
             $start,
-            $errors
+            $total_errors
         );
     }
 
-    public function importOrdersAction($start = 0, $errors = 0)
+    public function importOrdersAction($start = 0, $total_errors= 0)
     {
         return $this->genericImport(
             new OrdersImport($this->getDispatcher(), $this->getDb()),
-            Translator::getInstance()->trans("Orders importation"),
+            $this->getTranslator()->trans("Orders importation"),
             'order',
-            $this->getRoute('importT1.start.products'),
-            $this->getRoute('importT1.start.orders'),
+            'importT1.done',
+            'importT1.order',
             $start,
-            $errors
+            $total_errors
+        );
+    }
+
+    public function importDoneAction($total_errors= 0)
+    {
+        $errors = "";
+
+        if ($fh = fopen($this->log_file, 'r')) {
+            while (false != $line = fgets($fh)) {
+                $head = substr($line, 0, 4);
+                if ($head == '[ERR' || $head == '[WAR') {
+                    $errors .= $line;
+                }
+            }
+
+            @fclose($fh);
+        }
+
+        Tlog::getInstance()->info($this->getTranslator()->trans(
+            "Thelia DB Import terminated with %err error(s)", array("%err", $total_errors)));
+
+         return $this->render(
+            'done',
+            array(
+                'total_errors' => $total_errors,
+                'errors' => nl2br($errors)
+             )
         );
     }
 

@@ -23,67 +23,48 @@
     </route>
 
     <!-- Customer importation -->
-    <route id="importT1.start.customers" path="/admin/module/ImportT1/customers">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importCustomersAction</default>
-    </route>
-
-    <route id="importT1.customers" path="/admin/module/ImportT1/customer/{start}/{errors}">
+    <route id="importT1.customer" path="/admin/module/ImportT1/customer/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importCustomersAction</default>
     </route>
 
     <!-- Folders importation -->
-    <route id="importT1.start.folders" path="/admin/module/ImportT1/folders">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importFoldersAction</default>
-    </route>
-
-    <route id="importT1.folders" path="/admin/module/ImportT1/folder/{start}/{errors}">
+    <route id="importT1.folder" path="/admin/module/ImportT1/folder/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importFoldersAction</default>
     </route>
 
     <!-- Contents importation -->
-    <route id="importT1.start.contents" path="/admin/module/ImportT1/contents">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importContentsAction</default>
-    </route>
-
-    <route id="importT1.contents" path="/admin/module/ImportT1/content/{start}/{errors}">
+    <route id="importT1.content" path="/admin/module/ImportT1/content/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importContentsAction</default>
     </route>
 
     <!-- Features importation -->
-    <route id="importT1.features" path="/admin/module/ImportT1/features">
+    <route id="importT1.feature" path="/admin/module/ImportT1/feature/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importFeaturesAction</default>
     </route>
 
     <!-- Attributes importation -->
-    <route id="importT1.attributes" path="/admin/module/ImportT1/attributes">
+    <route id="importT1.attribute" path="/admin/module/ImportT1/attribute/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importAttributesAction</default>
     </route>
 
     <!-- Categories importation -->
-    <route id="importT1.start.categories" path="/admin/module/ImportT1/categories">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importCategoriesAction</default>
-    </route>
-
-    <route id="importT1.categories" path="/admin/module/ImportT1/category/{start}/{errors}">
+    <route id="importT1.categorie" path="/admin/module/ImportT1/category/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importCategoriesAction</default>
     </route>
 
     <!-- Products importation -->
-    <route id="importT1.start.products" path="/admin/module/ImportT1/products">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importProductsAction</default>
-    </route>
-
-    <route id="importT1.products" path="/admin/module/ImportT1/product/{start}/{errors}">
+    <route id="importT1.product" path="/admin/module/ImportT1/product/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importProductsAction</default>
     </route>
 
     <!-- Orders importation -->
-    <route id="importT1.start.orders" path="/admin/module/ImportT1/orders">
+    <route id="importT1.order" path="/admin/module/ImportT1/order/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importOrdersAction</default>
     </route>
 
-    <route id="importT1.orders" path="/admin/module/ImportT1/order/{start}/{errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importOrdersAction</default>
+    <!-- Done ! -->
+    <route id="importT1.done" path="/admin/module/ImportT1/done/{total_errors}">
+        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importDoneAction</default>
     </route>
 
     <!-- The default route, to display a template -->

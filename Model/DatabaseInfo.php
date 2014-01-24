@@ -93,5 +93,4 @@ class DatabaseInfo
     {
         return !(empty($this->hostname) || empty($this->username) || empty($this->dbname));
     }
-
 }

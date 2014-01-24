@@ -41,7 +41,12 @@ class FeaturesImport extends BaseImport
 
     public function getTotalCount()
     {
-        return 0;
+        return $this->t1db->num_rows($this->t1db->query("select id from caracteristique"));
+    }
+
+    public function getChunkSize()
+    {
+        return $this->getTotalCount();
     }
 
     public function preImport()
