@@ -205,10 +205,14 @@ class BaseImport
      */
     public function getT2Country($id_country_thelia_1)
     {
+        if (!isset($this->country_cache[$id_country_thelia_1])) {
 
-        if (!isset($this->title_cache[$id_country_thelia_1])) {
-
-            $obj = $this->t1db->query_obj("select isoalpha3 from pays where id=?", array($id_country_thelia_1));
+            try {
+                $obj = $this->t1db->query_obj("select isoalpha3 from pays where id=?", array($id_country_thelia_1));
+            }
+            catch (\Exception $ex) {
+                $obj = false;
+            }
 
             if ($obj == false) {
 
@@ -249,10 +253,10 @@ class BaseImport
                     ));
             }
 
-            $this->title_cache[$id_country_thelia_1] = $country;
+            $this->country_cache[$id_country_thelia_1] = $country;
         }
 
-        return $this->title_cache[$id_country_thelia_1];
+        return $this->country_cache[$id_country_thelia_1];
     }
 
 
