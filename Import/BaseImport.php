@@ -77,6 +77,11 @@ class BaseImport
 
     private $currency_cache;
 
+    /**
+     * @param bool $t1id
+     * @return \Thelia\Model\Currency
+     * @throws ImportException
+     */
     public function getT2Currency($t1id = false)
     {
 
@@ -85,7 +90,13 @@ class BaseImport
             if ($t1id !== false)
                 $obj = $this->t1db->query_obj("select * from devise where id=?", array($t1id));
             else {
-                $obj = $this->t1db->query_obj("select * from devise where defaut=1");
+                try {
+                    $obj = $this->t1db->query_obj("select * from devise where defaut=1");
+                }
+                catch (\Exception $ex) {
+                    // Thelia 1.5.1, no default column
+                    $obj = $this->t1db->query_obj("select * from devise order by id asc limit 1");
+                }
             }
 
             if ($obj == false) {
