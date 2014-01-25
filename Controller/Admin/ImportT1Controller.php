@@ -11,6 +11,7 @@ use ImportT1\Import\OrdersImport;
 use ImportT1\Import\ProductsImport;
 use ImportT1\Model\DatabaseInfo;
 use ImportT1\Model\Db;
+use Propel\Runtime\Propel;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Security\AccessManager;
@@ -42,6 +43,9 @@ class ImportT1Controller extends BaseAdminController
             ->setConfig($destination, TlogDestinationFile::VAR_PATH_FILE, $this->log_file)
             ->setFiles('*')
             ->setPrefix('[#LEVEL] #DATE #HOUR:');
+
+        // Do not log requests
+        Propel::getConnection(\Thelia\Model\Map\ProductTableMap::DATABASE_NAME)->useDebug(false);
     }
 
     public function indexAction()
