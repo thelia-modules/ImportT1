@@ -136,7 +136,10 @@ class BaseImport
 
         if (!isset($this->lang_cache[$id_lang_thelia_1])) {
 
-            $obj = $this->t1db->query_obj("select * from lang where id=?", array($id_lang_thelia_1));
+            if ($id_lang_thelia_1 > 0)
+                $obj = $this->t1db->query_obj("select * from lang where id=?", array($id_lang_thelia_1));
+            else
+                $obj = $this->t1db->query_obj("select * from lang order by id asc limit 1");
 
             if ($obj == false) {
                 throw new ImportException(
