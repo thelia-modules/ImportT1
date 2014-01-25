@@ -40,6 +40,7 @@ use Thelia\Core\Event\Tax\TaxRuleEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\UpdatePositionEvent;
 use Thelia\Log\Tlog;
+use Thelia\Model\Category;
 use Thelia\Model\CountryQuery;
 use Thelia\Model\LangQuery;
 use Thelia\Model\ProductDocumentQuery;
@@ -129,6 +130,34 @@ class ProductsImport extends BaseImport
         while ($hdl && $produit = $this->t1db->fetch_object($hdl)) {
 
             $count++;
+
+            // Put contents on the root folder in a special folder
+            if ($produit->rubrique == 0) {
+                try {
+                    $dossier = $this->cat_corresp->getT2($produit->rubrique);
+
+                }
+                catch (\Exception $ex) {
+                    // Create the '0' folder
+                    $root = new Category();
+
+                    $root
+                        ->setParent(0)
+                        ->setLocale('fr_FR')
+                        ->setTitle("Rubrique racine Thelia 1")
+                        ->setLocale('en_US')
+                        ->setTitle("Thelia 1 root category")
+                        ->setDescription("")
+                        ->setChapo("")
+                        ->setPostscriptum("")
+                        ->setVisible(true)
+                        ->save();
+
+                    Tlog::getInstance()->warning("Created pseudo-root category to store products at root level");
+
+                    $this->cat_corresp->addEntry(0, $root->getId());
+                }
+            }
 
             $rubrique = $this->cat_corresp->getT2($produit->rubrique);
 

@@ -3,7 +3,7 @@
 This module will import a Thelia 1.5.x database into the local Thelia 2 database. The following information will be imported :
 
 - Customers.
-- The complete catalog, with images and documents, featurees and attributes.
+- The complete catalog, with images and documents, features and attributes.
 - Folders and contents, with images and documents.
 - Orders.
 

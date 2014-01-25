@@ -35,6 +35,7 @@ use Thelia\Log\Tlog;
 use Thelia\Model\ContentDocumentQuery;
 use Thelia\Model\ContentImageQuery;
 use Thelia\Model\ContentQuery;
+use Thelia\Model\Folder;
 
 class ContentsImport extends BaseImport
 {
@@ -65,7 +66,6 @@ class ContentsImport extends BaseImport
     {
         // Delete table before proceeding
         ContentQuery::create()->deleteAll();
-        ContentQuery::create()->deleteAll();
 
         ContentImageQuery::create()->deleteAll();
         ContentDocumentQuery::create()->deleteAll();
@@ -95,6 +95,34 @@ class ContentsImport extends BaseImport
         while ($hdl && $contenu = $this->t1db->fetch_object($hdl)) {
 
             $count++;
+
+            // Put contents on the root folder in a special folder
+            if ($contenu->dossier == 0) {
+                try {
+                    $dossier = $this->fld_corresp->getT2($contenu->dossier);
+
+                }
+                catch (\Exception $ex) {
+                    // Create the '0' folder
+                    $root = new Folder();
+
+                    $root
+                        ->setParent(0)
+                        ->setLocale('fr_FR')
+                        ->setTitle("Dossier racine Thelia 1")
+                        ->setLocale('en_US')
+                        ->setTitle("Thelia 1 root folder")
+                        ->setDescription("")
+                        ->setChapo("")
+                        ->setPostscriptum("")
+                        ->setVisible(true)
+                    ->save();
+
+                    Tlog::getInstance()->warning("Created pseudo-root folder to store contents at root level");
+
+                    $this->fld_corresp->addEntry(0, $root->getId());
+                }
+            }
 
             $dossier = $this->fld_corresp->getT2($contenu->dossier);
 

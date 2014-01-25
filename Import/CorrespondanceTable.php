@@ -68,13 +68,8 @@ class CorrespondanceTable
         );
     }
 
-    public function getT2($idt1)
+    public function getT2($idt1, $failIfZero = false)
     {
-
-        if ($idt1 == 0) {
-            return 0;
-        }
-
         $obj = $this->db->query_obj("select idt2 from `$this->table_name` where idt1 = ?", array($idt1));
 
         if ($obj === false || intval($obj->idt2) == 0) {
