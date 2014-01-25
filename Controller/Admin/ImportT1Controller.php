@@ -38,8 +38,8 @@ class ImportT1Controller extends BaseAdminController
 
         Tlog::getInstance()
             ->setLevel(Tlog::INFO)
-            ->setConfig($destination, TlogDestinationFile::VAR_PATH_FILE, $this->log_file)
             ->setDestinations($destination)
+            ->setConfig($destination, TlogDestinationFile::VAR_PATH_FILE, $this->log_file)
             ->setFiles('*')
             ->setPrefix('[#LEVEL] #DATE #HOUR:');
     }
