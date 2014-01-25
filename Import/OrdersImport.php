@@ -62,6 +62,10 @@ class OrdersImport extends BaseImport
 
     }
 
+    public function getChunkSize()
+    {
+        return 100;
+    }
     public function getTotalCount()
     {
         return $this->t1db->num_rows($this->t1db->query("select id from commande"));
@@ -313,10 +317,5 @@ class OrdersImport extends BaseImport
         }
 
         return new ImportChunkResult($count, $errors);
-    }
-
-    public function getChunkSize()
-    {
-        return 10;
     }
 }
