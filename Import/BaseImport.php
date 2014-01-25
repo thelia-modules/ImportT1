@@ -84,12 +84,11 @@ class BaseImport
      */
     public function getT2Currency($t1id = false)
     {
-
         if (!isset($this->currency_cache)) {
 
-            if ($t1id !== false)
+            if ($t1id !== false && $t1id > 0) {
                 $obj = $this->t1db->query_obj("select * from devise where id=?", array($t1id));
-            else {
+            } else {
                 try {
                     $obj = $this->t1db->query_obj("select * from devise where defaut=1");
                 }
@@ -102,8 +101,9 @@ class BaseImport
             if ($obj == false) {
                 throw new ImportException(
                     Translator::getInstance()->trans(
-                        "Failed to find the Thelia 1 currency %cur"
-                    ), array('%cur' => $t1id === false ? 'Default' : "ID=$t1id"));
+                        "Failed to find the Thelia 1 currency %cur",
+                        array('%cur' => $t1id === false ? 'Default' : "ID=$t1id")
+                    ));
 
             }
 
