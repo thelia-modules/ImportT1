@@ -297,41 +297,29 @@ class BaseImport
 
     protected function updateRewrittenUrl($t2_object, $locale, $id_lang_t1, $fond_t1, $params_t1)
     {
-        try {
-            $t1_obj = $this->t1db->query_obj(
-                "select * from reecriture where fond=? and param=? and lang=? and actif=1",
-                array($fond_t1, "&$params_t1", $id_lang_t1)
-            );
+        $t1_obj = $this->t1db->query_obj(
+            "select * from reecriture where fond=? and param like? and lang=? and actif=1",
+            array($fond_t1, "&$params_t1", $id_lang_t1)
+        );
 
-            if ($t1_obj) {
-                try {
-                    // Delete all previous instance for the T2 object and for the rewtitten URL
-                    RewritingUrlQuery::create()
-                        ->filterByViewLocale($locale)
-                        ->findByViewId($t2_object->getId())
-                        ->delete();
+        if ($t1_obj) {
+            try {
+                // Delete all previous instance for the T2 object and for the rewritten URL
+                RewritingUrlQuery::create()
+                    ->filterByViewLocale($locale)
+                    ->findByViewId($t2_object->getId())
+                    ->delete();
 
-                    RewritingUrlQuery::create()
-                        ->filterByViewLocale($locale)
-                        ->findByUrl($t1_obj->url)
-                        ->delete();
+                RewritingUrlQuery::create()
+                    ->filterByViewLocale($locale)
+                    ->findByUrl($t1_obj->url)
+                    ->delete();
 
-                    $t2_object->setRewrittenUrl($locale, $t1_obj->url);
-                } catch (UrlRewritingException $ex) {
-                    Tlog::getInstance()
-                        ->addError(
-                            "Failed to create rewritten URL for locale $locale, fond $fond_t1, with params $params_t1: ",
-                            $ex->getMessage()
-                        );
-                }
-            }
-        } catch (\Exception $ex) {
-
-            // Log exception only for 1.5.x, as 1.4.x does not have a reecriture table
-            if ($this->thelia_version >= 150) {
+                $t2_object->setRewrittenUrl($locale, $t1_obj->url);
+            } catch (UrlRewritingException $ex) {
                 Tlog::getInstance()
-                    ->addWarning(
-                        "Failed to query reecriture table",
+                    ->addError(
+                        "Failed to create rewritten URL for locale $locale, fond $fond_t1, with params $params_t1: ",
                         $ex->getMessage()
                     );
             }
