@@ -62,11 +62,10 @@ class CustomersImport extends BaseImport
         OrderQuery::create()->deleteAll();
         AddressQuery::create()->deleteAll();
         CustomerQuery::create()->deleteAll();
-        CustomerTitleQuery::create()->deleteAll();
 
         $this->cust_corresp->reset();
 
-        $this->importCustomerTitle();
+        if ($this->thelia_version > 150) $this->importCustomerTitle();
     }
 
     public function import($startRecord = 0)
@@ -100,7 +99,7 @@ class CustomersImport extends BaseImport
                 $country = $this->getT2Country($client->pays);
 
                 try {
-                    $sponsor = $this->getT2Customer($client->parrain)->getRef();
+                    $sponsor = $this->cust_corresp->getT2($client->parrain)->getRef();
                 } catch (ImportException $ex) {
                     $sponsor = '';
                 }
@@ -156,7 +155,7 @@ class CustomersImport extends BaseImport
                             $country->getId(),
                             '',
                             $adresse->tel,
-                            $adresse->entreprise
+                            isset($adresse->entreprise) ? $adresse->entreprise : ''
                         );
 
                         $adr_event->setCustomer($event->getCustomer());
@@ -190,30 +189,36 @@ class CustomersImport extends BaseImport
 
     public function importCustomerTitle()
     {
+        CustomerTitleQuery::create()->deleteAll();
 
-        $hdl = $this->t1db->query("select * from raison order by classement");
+        try {
+            $hdl = $this->t1db->query("select * from raison order by classement");
 
-        while ($hdl && $raison = $this->t1db->fetch_object($hdl)) {
+            while ($hdl && $raison = $this->t1db->fetch_object($hdl)) {
 
-            $ct = new CustomerTitle();
+                $ct = new CustomerTitle();
 
-            $descs = $this->t1db->query_list(
-                "select * from raisondesc where raison = ? order by lang asc",
-                array($raison->id)
-            );
+                $descs = $this->t1db->query_list(
+                    "select * from raisondesc where raison = ? order by lang asc",
+                    array($raison->id)
+                );
 
-            foreach ($descs as $desc) {
+                foreach ($descs as $desc) {
 
-                $lang = $this->getT2Lang($desc->lang);
+                    $lang = $this->getT2Lang($desc->lang);
 
-                $ct
-                    ->setLocale($lang->getLocale())
-                    ->setByDefault($raison->defaut ? true : false)
-                    ->setPosition($raison->classement)
-                    ->setLong($desc->long)
-                    ->setShort($desc->court)
-                    ->save();
+                    $ct
+                        ->setLocale($lang->getLocale())
+                        ->setByDefault($raison->defaut ? true : false)
+                        ->setPosition($raison->classement)
+                        ->setLong($desc->long)
+                        ->setShort($desc->court)
+                        ->save();
+                }
             }
+        }
+        catch (\Exception $ex) {
+            Tlog::getInstance()->error("Failed to import CutsomerTitles (not a problem for Thelia 1.4.x)");
         }
     }
 

@@ -15,14 +15,14 @@
             <p>{intl l="Please wait, currently processing elements %start to %end" start=$view_start end=$end
                 object=$object}</p>
 
-            <p>{intl l="%start imported elements on %total total, %remaining to go, %errors error(s) for now (<a href=\"%log_url\" target=\"_log\">view log file</a>)." errors=$errors start=$start object=$object
+            <p>{intl l="%start imported elements on %total total, %remaining to go, %errors error(s) for now (<a href=\"%log_url\" target=\"_log\">view complete log file</a>)." errors=$errors start=$start object=$object
                 remaining=$remaining total=$total log_url={url path='/admin/module/ImportT1/show-log'}}</p>
 
             <p>{intl l="This page will reload until all elements have beeen imported, please do not close your browser."}</p>
         {else}
             <p>{intl l="%total elements have been processed." object=$object total=$total}</p>
             {if $errors > 0}
-                <p>{intl l="Total errors detected: %errors. Please <a href=\"%log_url\" target=\"_log\">check the log file</a> for details." object=$object errors=$errors log_url={url path='/admin/module/ImportT1/show-log'}}</p>
+                <p>{intl l="Total errors detected: %errors. Please <a href=\"%log_url\" target=\"_log\">check the complete log file</a> for details." object=$object errors=$errors log_url={url path='/admin/module/ImportT1/show-log'}}</p>
             {/if}
         {/if}
     </div>
@@ -39,6 +39,21 @@
         </div>
     </div>
 </div>
+
+{if ! empty($messages)}
+<div class="row">
+    <div class="col-md-12">
+        <div class="errors-container">
+
+            <div class="title">ERRORS DETECTED</div>
+
+            <div class="well well-sm">
+                {$messages nofilter}
+            </div>
+        </div>
+    </div>
+</div>
+{/if}
 {/block}
 
 {block name="javascript-initialization"}

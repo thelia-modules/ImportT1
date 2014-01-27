@@ -13,9 +13,7 @@
 
 {block name="main-content"}
     <div class="modules">
-
         <div id="wrapper" class="container">
-
             <div class="clearfix">
                 <ul class="breadcrumb pull-left">
                     <li><a href="{url path='/admin/home'}">{intl l="Home"}</a></li>

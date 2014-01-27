@@ -329,12 +329,15 @@ class ProductsImport extends BaseImport
 
                                 try {
 
-                                    if (intval($caracval->caracdisp) == 0) {
-                                        $feature_value = $caracval->valeur;
-                                        $is_text = true;
-                                    } else {
+                                    if (intval($caracval->caracdisp) != 0) {
                                         $feature_value = $this->feat_av_corresp->getT2($caracval->caracdisp);
                                         $is_text = false;
+                                    } else if ($caracval->valeur != '') {
+                                        $feature_value = $caracval->valeur;
+                                        $is_text = true;
+                                    }
+                                    else {
+                                        continue;
                                     }
 
                                     $feature_value_event = new FeatureProductUpdateEvent(

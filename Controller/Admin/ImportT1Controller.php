@@ -23,7 +23,7 @@ class ImportT1Controller extends BaseAdminController
 {
     const RESOURCE_CODE = 'module.ImportT1';
 
-    const MIN_VERSION = 151;
+    const MIN_VERSION = 142;
 
     protected $log_file;
 
@@ -96,7 +96,7 @@ class ImportT1Controller extends BaseAdminController
 
                     if (intval(substr($version, 0, 3)) < self::MIN_VERSION) {
                         $error_message = $this->getTranslator()->trans(
-                            "A Thelia %version database was found. Unfortunately, only Thelia 1.5.1 or newer databases may be imported. Please upgrade this Thelia 1 installation up to the latest available Thelia 1 version.",
+                            "A Thelia %version database was found. Unfortunately, only Thelia 1.4.2 or newer databases may be imported. Please upgrade this Thelia 1 installation up to the latest available Thelia 1 version.",
                             array("%version" => rtrim(preg_replace("/(.)/", "$1.", $version), "."))
                         );
                     } else {
@@ -137,6 +137,23 @@ class ImportT1Controller extends BaseAdminController
                 );
             }
         }
+
+        if ($error_message !== false) {
+            // Check that we have at least one payment and one delivery module
+            if (null === ModuleQuery::create()->findOneByType(BaseModule::DELIVERY_MODULE_TYPE)) {
+                $error_message = $this->getTranslator()->trans("No active delivery module was found. Please install and activate at least one delivery module.");
+            }
+        }
+
+        if ($error_message !== false) {
+            // Check that we have at least one paypent and one delivery module
+            // Find the first availables delivery and payment modules, that's the best we can do.
+            if (null === ModuleQuery::create()->findOneByType(BaseModule::PAYMENT_MODULE_TYPE)) {
+                $error_message = $this->getTranslator()->trans("No active paiement module was found. Please install and activate at least one payment module.");
+            }
+        }
+
+        $paymentModule  = ModuleQuery::create()->findOneByType(BaseModule::PAYMENT_MODULE_TYPE);
 
         if ($error_message !== false) {
             // Render the edition template.
@@ -239,7 +256,8 @@ class ImportT1Controller extends BaseAdminController
                     'remaining' => $remaining,
                     'reload' => $remaining > 0,
                     'next_route' => $this->getRoute($next_route, array('start' => 0, 'total_errors' => $errors)),
-                    'startover_route' =>  $this->getRoute($startover_route, array('start' => 0, 'total_errors' => $errors))
+                    'startover_route' =>  $this->getRoute($startover_route, array('start' => 0, 'total_errors' => $errors)),
+                    'messages' => $this->getErrors(true)
                 )
             );
         } catch (\Exception $ex) {
@@ -392,4 +410,24 @@ class ImportT1Controller extends BaseAdminController
         );
     }
 
+    protected function getErrors($reverse) {
+
+        $errors = array();
+
+        if ($fh = fopen($this->log_file, 'r')) {
+            while (false != $line = fgets($fh)) {
+                $head = substr($line, 0, 4);
+                if ($head == '[ERR' || $head == '[WAR') {
+                    $errors[] = trim($line);
+                }
+            }
+
+            @fclose($fh);
+        }
+
+        if ($reverse)
+            $errors = array_reverse($errors);
+
+        return nl2br(implode('<br />', $errors));
+    }
 }

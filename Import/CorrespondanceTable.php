@@ -31,18 +31,18 @@ use Thelia\Core\Translation\Translator;
 class CorrespondanceTable
 {
 
-    const CUSTOMERS = 't1-t2-customers';
-    const ATTRIBUTES = 't1_t2_attributes';
+    const CUSTOMERS = 't1_t2_customer';
+    const ATTRIBUTES = 't1_t2_attribute';
     const ATTRIBUTES_AV = 't1_t2_attributes_av';
-    const CATEGORIES = 't1_t2_categories';
-    const CONTENTS = 't1_t2_contents';
-    const FEATURES = 't1_t2_features';
-    const FEATURES_AV = 't1_t2_features_av';
-    const FOLDERS = 't1_t2_folders';
-    const PRODUCTS = 't1_t2_products';
-    const TEMPLATES = 't1_t2_templates';
+    const CATEGORIES = 't1_t2_category';
+    const CONTENTS = 't1_t2_content';
+    const FEATURES = 't1_t2_feature';
+    const FEATURES_AV = 't1_t2_feature_av';
+    const FOLDERS = 't1_t2_folder';
+    const PRODUCTS = 't1_t2_product';
+    const TEMPLATES = 't1_t2_template';
     const TAX = 't1_t2_tax';
-    const ORDERS = 't1_t2_orders';
+    const ORDERS = 't1_t2_order';
 
     protected $table_name;
     protected $db;
@@ -73,10 +73,12 @@ class CorrespondanceTable
         $obj = $this->db->query_obj("select idt2 from `$this->table_name` where idt1 = ?", array($idt1));
 
         if ($obj === false || intval($obj->idt2) == 0) {
+            $obj_name = ucfirst(preg_replace("/t1_t2_/", "", $this->table_name));
+
             throw new ImportException(
                 Translator::getInstance()->trans(
-                    "Failed to find a Thelia 2 ID for Thelia 1 ID '%id' in %table",
-                    array("%id" => $idt1, "%table" => $this->table_name)
+                    "Failed to find a Thelia 2 %obj for Thelia 1 ID '%id'",
+                    array("%obj" => $obj_name, "%id" => $idt1, "%table" => $this->table_name)
                 ));
         }
 

@@ -187,7 +187,7 @@ class OrdersImport extends BaseImport
 
                     $delivery_adr
                         ->setCustomerTitleId($this->getT2CustomerTitle($adr_livr->raison)->getId())
-                        ->setCompany($adr_livr->entreprise)
+                        ->setCompany(isset($adr_livr->entreprise) ? $adr_livr->entreprise : '')
                         ->setFirstname($adr_livr->prenom)
                         ->setLastname($adr_livr->nom)
                         ->setAddress1($adr_livr->adresse1)
@@ -203,7 +203,7 @@ class OrdersImport extends BaseImport
 
                     $billing_adr
                         ->setCustomerTitleId($this->getT2CustomerTitle($adr_fact->raison)->getId())
-                        ->setCompany($adr_fact->entreprise)
+                        ->setCompany(isset($adr_fact->entreprise) ? $adr_fact->entreprise : '')
                         ->setFirstname($adr_fact->prenom)
                         ->setLastname($adr_fact->nom)
                         ->setAddress1($adr_fact->adresse1)
@@ -269,6 +269,12 @@ class OrdersImport extends BaseImport
 
                     foreach ($vps as $vp) {
 
+                        $parent = 0;
+
+                        if (isset($vp->parent) && $vp->parent != 0) {
+                            $parent = $this->product_corresp->getT2($vp->parent);
+                        }
+
                         $orderProduct = new OrderProduct();
 
                         $orderProduct
@@ -288,7 +294,7 @@ class OrdersImport extends BaseImport
                             ->setEanCode("") // Not Available in T1
                             ->setTaxRuleTitle("")
                             ->setTaxRuleDescription("")
-                            ->setParent($vp->parent == 0 ? 0 : $this->product_corresp->getT2($vp->parent))
+                            ->setParent($parent)
                             ->save($con);
 
                         $orderProductTax = new OrderProductTax();
