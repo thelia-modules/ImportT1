@@ -308,7 +308,7 @@ class BaseImport
     {
 
         $t1_obj = $this->t1db->query_obj(
-            "select * from reecriture where fond=? and param=? and lang=? and actif=1",
+            "select * from reecriture where fond=? and param like? and lang=? and actif=1",
             array($fond_t1, "&$params_t1", $id_lang_t1)
         );
 

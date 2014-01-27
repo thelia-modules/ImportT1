@@ -461,7 +461,7 @@ class ProductsImport extends BaseImport
                                 $lang->getLocale(),
                                 $objdesc->lang,
                                 "produit",
-                                "id_produit=$produit->id"
+                                "%id_produit=$produit->id%"
                             );
                         }
 
