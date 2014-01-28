@@ -190,7 +190,7 @@ class FoldersImport extends BaseImport
                 }
             } catch (\Exception $ex) {
 
-                Tlog::getInstance()->addError("Failed to create folder: ", $ex->getMessage());
+                Tlog::getInstance()->addError("Failed to import folder ID=$dossier->id: ", $ex->getMessage());
 
                 $errors++;
             }

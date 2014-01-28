@@ -216,7 +216,7 @@ class FeaturesImport extends BaseImport
 
                     $idx++;
                 } catch (\Exception $ex) {
-                    Tlog::getInstance()->addError("Failed to create Feature Av: ", $ex->getMessage());
+                    Tlog::getInstance()->addError("Failed to import Feature Av: ", $ex->getMessage());
 
                     $errors++;
                 }

@@ -316,7 +316,7 @@ class OrdersImport extends BaseImport
                 }
             } catch (\Exception $ex) {
 
-                Tlog::getInstance()->addError("Failed to create order ref $commande->ref: ", $ex->getMessage());
+                Tlog::getInstance()->addError("Failed to import order ref $commande->ref: ", $ex->getMessage());
 
                 $errors++;
             }

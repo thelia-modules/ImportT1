@@ -222,7 +222,7 @@ class ContentsImport extends BaseImport
                     }
                 } catch (\Exception $ex) {
 
-                    Tlog::getInstance()->addError("Failed to create content ID=$contenu->id: ", $ex->getMessage());
+                    Tlog::getInstance()->addError("Failed to import content ID=$contenu->id: ", $ex->getMessage());
 
                     $errors++;
                 }

@@ -68,11 +68,14 @@ class CorrespondanceTable
         );
     }
 
-    public function getT2($idt1, $failIfZero = false)
+    public function getT2($idt1, $failIfZero = true)
     {
         $obj = $this->db->query_obj("select idt2 from `$this->table_name` where idt1 = ?", array($idt1));
 
         if ($obj === false || intval($obj->idt2) == 0) {
+
+            if (! $failIfZero) return 0;
+
             $obj_name = ucfirst(preg_replace("/t1_t2_/", "", $this->table_name));
 
             throw new ImportException(

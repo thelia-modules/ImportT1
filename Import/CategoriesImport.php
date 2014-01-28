@@ -208,11 +208,12 @@ class CategoriesImport extends BaseImport
                             $tpl_update = new TemplateUpdateEvent($tpl_id);
 
                             foreach ($attribute_list as $attr) {
-                                $attribute_template = new AttributeTemplate();
-
-                                $id = $this->attr_corresp->getT2($attr->declinaison);
 
                                 try {
+                                    $attribute_template = new AttributeTemplate();
+
+                                    $id = $this->attr_corresp->getT2($attr->declinaison);
+
                                     $attribute_template->setAttributeId($id)->setTemplateId($tpl_id)->save();
                                 } catch (\Exception $ex) {
                                     Tlog::getInstance()
@@ -256,8 +257,10 @@ class CategoriesImport extends BaseImport
                         foreach ($contents as $content) {
 
                             try {
-                                $content_event = new CategoryAddContentEvent($event->getCategory(
-                                ), $this->content_corresp->getT2($content->contenu));
+                                $content_event = new CategoryAddContentEvent(
+                                    $event->getCategory(),
+                                    $this->content_corresp->getT2($content->contenu)
+                                );
 
                                 $this->dispatcher->dispatch(TheliaEvents::CATEGORY_ADD_CONTENT, $content_event);
                             } catch (\Exception $ex) {
@@ -316,7 +319,7 @@ class CategoriesImport extends BaseImport
                 }
             } catch (\Exception $ex) {
 
-                Tlog::getInstance()->addError("Failed to create category: ", $ex->getMessage());
+                Tlog::getInstance()->addError("Failed to import category ID=$rubrique->id: ", $ex->getMessage());
 
                 $errors++;
             }
