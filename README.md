@@ -7,7 +7,7 @@ This module will import a Thelia 1.5.x database into the local Thelia 2 database
 - Folders and contents, with images and documents.
 - Orders.
 
-** Be aware that the related content of your database will be deleted, so be sure to backup it before starting the importation process.**
+**Be aware that the related content of your database will be deleted, so be sure to backup it before starting the importation process.**
 
 The import process needs an access to your Thelia 1 database. This could be the real (live) database, but is is safer to make a copy of this database (e.g. an export / import), and start the import on this copy.
 
@@ -17,9 +17,15 @@ somewhere else.
 
 It is **recommended** to start the import process on a fresh Thelia 2 database, to prevent any inconsistencies
 
+## Customer passwords ##
+
+The import process can't guess your customer password. At this time, the import process set the password of imported customers to its email address. Thus, the customer joe@cool.com will have the password joe@cool.com
+
+This is a temporary solution, an improvement is in the pipe.
+
 ## Payment and Delivery modules ##
 
-Beforme starting the importation, please be sure that at least one payment module and one delivery module are installed and activated.
+Before starting the importation, please be sure that at least one payment module and one delivery module are installed and activated.
 
 Unfortunately, the import process cannot find the real delivery and payment modules used by your customers during their orders on Thelia 1. Thus, the import process
 will use the first payment and delivery modules found in Thelia 2, and assign them to imported orders.
