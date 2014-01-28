@@ -193,15 +193,6 @@ class ContentsImport extends BaseImport
 
                             $image_import->importMedia($contenu->id, $content_id);
                             $document_import->importMedia($contenu->id, $content_id);
-
-                            // Update the rewritten URL, if one was defined
-                            $this->updateRewrittenUrl(
-                                $event->getContent(),
-                                $lang->getLocale(),
-                                $objdesc->lang,
-                                "contenu",
-                                "%id_contenu=$contenu->id%"
-                            );
                         }
 
                         // Update the newly created content
@@ -217,6 +208,15 @@ class ContentsImport extends BaseImport
                             ->setPostscriptum($objdesc->postscriptum);
 
                         $this->dispatcher->dispatch(TheliaEvents::CONTENT_UPDATE, $update_event);
+
+                        // Update the rewritten URL, if one was defined
+                        $this->updateRewrittenUrl(
+                            $event->getContent(),
+                            $lang->getLocale(),
+                            $objdesc->lang,
+                            "contenu",
+                            "%id_contenu=$contenu->id&id_dossier=$contenu->dossier%"
+                        );
 
                         $idx++;
                     }

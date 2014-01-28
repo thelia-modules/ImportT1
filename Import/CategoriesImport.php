@@ -279,15 +279,6 @@ class CategoriesImport extends BaseImport
 
                         $image_import->importMedia($rubrique->id, $category_id);
                         $document_import->importMedia($rubrique->id, $category_id);
-
-                        // Update the rewritten URL
-                        $this->updateRewrittenUrl(
-                            $event->getCategory(),
-                            $lang->getLocale(),
-                            $objdesc->lang,
-                            "rubrique",
-                            "%id_rubrique=$rubrique->id%"
-                        );
                     }
 
                     // Update the newly created category
@@ -314,6 +305,15 @@ class CategoriesImport extends BaseImport
 
                         $this->dispatcher->dispatch(TheliaEvents::TEMPLATE_UPDATE, $tpl_update);
                     }
+
+                    // Update the rewritten URL
+                    $this->updateRewrittenUrl(
+                        $event->getCategory(),
+                        $lang->getLocale(),
+                        $objdesc->lang,
+                        "rubrique",
+                        "%id_rubrique=$rubrique->id"
+                    );
 
                     $idx++;
                 }

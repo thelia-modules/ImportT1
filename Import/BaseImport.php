@@ -24,6 +24,7 @@
 namespace ImportT1\Import;
 
 use ImportT1\Model\Db;
+use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thelia\Core\Translation\Translator;
 use Thelia\Exception\UrlRewritingException;
@@ -37,6 +38,7 @@ use Thelia\Model\CustomerTitle;
 use Thelia\Model\CustomerTitleI18nQuery;
 use Thelia\Model\Lang;
 use Thelia\Model\LangQuery;
+use Thelia\Model\Map\RewritingUrlTableMap;
 use Thelia\Model\RewritingUrlQuery;
 
 class BaseImport
@@ -163,6 +165,39 @@ class BaseImport
                 $lang = LangQuery::create()->filterByLocale("fr_FR")->findOneByTitle($obj->description);
 
             if ($lang === null) {
+
+                // If the lang id is not zero, create it in T2
+                if ($id_lang_thelia_1 > 0) {
+
+                    $lang = new Lang();
+
+                    if (isset($obj->code)) {
+                        $lang
+                            ->setTitle($obj->description)
+                            ->setCode($obj->code)
+                            ->setLocale("$obj->code"."_".strtoupper($obj->code));
+                        ;
+                    }
+                    else {
+                        $lang
+                            ->setTitle("Imported Thelia lang $id_lang_thelia_1")
+                            ->setCode("")
+                            ->setLocale("")
+                        ;
+                    }
+
+                    $lang
+                        ->setDatetimeFormat('d/m/Y H:i:s')
+                        ->setDecimals(2)
+                        ->setDecimalSeparator('.')
+                        ->setThousandsSeparator(' ')
+                        ->setTimeFormat('H:i:s')
+                        ->setDateFormat('d/m/Y')
+                        ->save();
+
+                    Tlog::getInstance()->addInfo("Created Thelia 2 lang from Thelia 1 lang ID=$id_lang_thelia_1");
+
+                }
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 lang for Thelia 1 lang id %id",
@@ -303,8 +338,16 @@ class BaseImport
         );
 
         if ($t1_obj) {
+
+            Tlog::getInstance()->info("Found rewritten URL $t1_obj->url for fond $fond_t1, with params $params_t1");
+
             try {
                 // Delete all previous instance for the T2 object and for the rewritten URL
+                // Also empty url rewriting table
+                $con = Propel::getConnection(RewritingUrlTableMap::DATABASE_NAME);
+
+                $con->exec('SET FOREIGN_KEY_CHECKS=0');
+
                 RewritingUrlQuery::create()
                     ->filterByViewLocale($locale)
                     ->findByViewId($t2_object->getId())
@@ -315,17 +358,25 @@ class BaseImport
                     ->findByUrl($t1_obj->url)
                     ->delete();
 
+                $con->exec('SET FOREIGN_KEY_CHECKS=1');
+
                 $t2_object->setRewrittenUrl($locale, $t1_obj->url);
 
-                Tlog::getInstance()->info("Imported rewritten URL $t1_obj->url");
+                Tlog::getInstance()->info("Imported rewritten URL for locale $locale, $t1_obj->url");
 
-            } catch (UrlRewritingException $ex) {
+            } catch (\Exception $ex) {
                 Tlog::getInstance()
                     ->addError(
                         "Failed to create rewritten URL for locale $locale, fond $fond_t1, with params $params_t1: ",
                         $ex->getMessage()
                     );
             }
+        }
+        else {
+            Tlog::getInstance()
+                ->addNotice(
+                    "No rewritten URL was found for locale $locale, fond '$fond_t1', with params '$params_t1', lang $id_lang_t1"
+                );
         }
     }
 }

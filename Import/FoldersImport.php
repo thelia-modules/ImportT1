@@ -161,15 +161,6 @@ class FoldersImport extends BaseImport
 
                         $image_import->importMedia($dossier->id, $folder_id);
                         $document_import->importMedia($dossier->id, $folder_id);
-
-                        // Update the rewritten URL, if one was defined
-                        $this->updateRewrittenUrl(
-                            $event->getFolder(),
-                            $lang->getLocale(),
-                            $objdesc->lang,
-                            "dossier",
-                            "%id_dossier=$dossier->id%"
-                        );
                     }
 
                     // Update the newly created folder
@@ -185,6 +176,15 @@ class FoldersImport extends BaseImport
                         ->setPostscriptum($objdesc->postscriptum);
 
                     $this->dispatcher->dispatch(TheliaEvents::FOLDER_UPDATE, $update_event);
+
+                    // Update the rewritten URL, if one was defined
+                    $this->updateRewrittenUrl(
+                        $event->getFolder(),
+                        $lang->getLocale(),
+                        $objdesc->lang,
+                        "dossier",
+                        "%id_dossier=$dossier->id"
+                    );
 
                     $idx++;
                 }

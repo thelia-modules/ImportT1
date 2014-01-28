@@ -457,15 +457,6 @@ class ProductsImport extends BaseImport
 
                             $image_import->importMedia($produit->id, $product_id);
                             $document_import->importMedia($produit->id, $product_id);
-
-                            // Update the rewritten URL, if one was defined
-                            $this->updateRewrittenUrl(
-                                $event->getProduct(),
-                                $lang->getLocale(),
-                                $objdesc->lang,
-                                "produit",
-                                "%id_produit=$produit->id%"
-                            );
                         }
 
                         // Update the newly created product
@@ -481,6 +472,15 @@ class ProductsImport extends BaseImport
                             ->setDefaultCategory($this->cat_corresp->getT2($produit->rubrique));
 
                         $this->dispatcher->dispatch(TheliaEvents::PRODUCT_UPDATE, $update_event);
+
+                        // Update the rewritten URL, if one was defined
+                        $this->updateRewrittenUrl(
+                            $event->getProduct(),
+                            $lang->getLocale(),
+                            $objdesc->lang,
+                            "produit",
+                            "%id_produit=$produit->id&id_rubrique=$produit->rubrique%"
+                        );
 
                         $idx++;
                     }
