@@ -154,7 +154,7 @@ class OrdersImport extends BaseImport
                 }
 
                 if (null === $status = OrderStatusQuery::create()->findPk($commande->statut)) {
-                    throw new ImportException("Failed to find order status ID=$commande->client");
+                    throw new ImportException("Failed to find order status ID=$commande->statut");
                 }
 
                 // Create invoice address

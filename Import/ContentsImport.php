@@ -200,7 +200,7 @@ class ContentsImport extends BaseImport
                                 $lang->getLocale(),
                                 $objdesc->lang,
                                 "contenu",
-                                "id_contenu=$contenu->id"
+                                "%id_contenu=$contenu->id%"
                             );
                         }
 

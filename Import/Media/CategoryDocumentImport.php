@@ -42,7 +42,7 @@ class CategoryDocumentImport extends AbstractMediaImport
 
     protected function getMediaDesc($t1_object_id)
     {
-        return $this->t1db->query_list("select * from documentdesc where rubrique = ?", array($t1_object_id));
+        return $this->t1db->query_list("select * from documentdesc where document = ?", array($t1_object_id));
     }
 
     public function importMedia($id_rubrique, $id_category)

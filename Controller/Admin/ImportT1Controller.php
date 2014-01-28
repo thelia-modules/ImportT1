@@ -18,6 +18,9 @@ use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Destination\TlogDestinationFile;
 use Thelia\Log\Tlog;
+use Thelia\Model\Map\ProductTableMap;
+use Thelia\Model\ModuleQuery;
+use Thelia\Module\BaseModule;
 
 class ImportT1Controller extends BaseAdminController
 {
@@ -45,7 +48,7 @@ class ImportT1Controller extends BaseAdminController
             ->setPrefix('[#LEVEL] #DATE #HOUR:');
 
         // Do not log requests
-        Propel::getConnection(\Thelia\Model\Map\ProductTableMap::DATABASE_NAME)->useDebug(false);
+        Propel::getConnection(ProductTableMap::DATABASE_NAME)->useDebug(false);
     }
 
     public function indexAction()
@@ -125,7 +128,7 @@ class ImportT1Controller extends BaseAdminController
                             }
                         }
                     }
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     $error_message = $this->getTranslator()->trans(
                         "No Thelia 1 database was found in this database. Please check your input and try again."
                     );

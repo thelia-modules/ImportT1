@@ -283,7 +283,7 @@ class CategoriesImport extends BaseImport
                             $lang->getLocale(),
                             $objdesc->lang,
                             "rubrique",
-                            "id_rubrique=$rubrique->id"
+                            "%id_rubrique=$rubrique->id%"
                         );
                     }
 

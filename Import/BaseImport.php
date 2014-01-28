@@ -316,6 +316,9 @@ class BaseImport
                     ->delete();
 
                 $t2_object->setRewrittenUrl($locale, $t1_obj->url);
+
+                Tlog::getInstance()->info("Imported rewritten URL $t1_obj->url");
+
             } catch (UrlRewritingException $ex) {
                 Tlog::getInstance()
                     ->addError(

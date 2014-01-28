@@ -168,7 +168,7 @@ class FoldersImport extends BaseImport
                             $lang->getLocale(),
                             $objdesc->lang,
                             "dossier",
-                            "id_dossier=$dossier->id"
+                            "%id_dossier=$dossier->id%"
                         );
                     }
 
