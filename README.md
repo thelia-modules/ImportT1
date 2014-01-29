@@ -17,6 +17,19 @@ somewhere else.
 
 It is **recommended** to start the import process on a fresh Thelia 2 database, to prevent any inconsistencies
 
+## How to install
+
+This module must be into your ```modules/``` directory (thelia/local/modules/).
+
+You can download the .zip file of this module or clone it into your project like this :
+
+```
+cd /path-to-thelia
+git clone https://github.com/thelia-modules/importT1.git local/modules/ImportT1
+```
+
+Next, go to your Thelia admin panel for module activation.
+
 ## Customer passwords ##
 
 The import process can't guess your customer password. At this time, the import process set the password of imported customers to its email address. Thus, the customer joe@cool.com will have the password joe@cool.com
