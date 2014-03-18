@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<database defaultIdMethod="native" name="thelia" namespace="Import153\Model">
+<database defaultIdMethod="native" name="thelia" namespace="ImportT1\Model">
     <!--
     See propel documentation on http://propelorm.org for all information about schema file
     -->
-    <external-schema filename="E:\Dev\Thelia\Thelia2\thelia\local\config\schema.xml" referenceOnly="true"/>
+    <table name="customer_temp">
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER" />
+        <column name="email" size="255" type="VARCHAR" />
+        <column name="password" type="VARCHAR" size="255"/>
+        <column name="processed" type="BOOLEAN" default="false"/>
+    </table>
 </database>
