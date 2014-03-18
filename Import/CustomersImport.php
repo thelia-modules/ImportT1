@@ -23,6 +23,7 @@
 
 namespace ImportT1\Import;
 
+use ImportT1\Model\CustomerTemp;
 use ImportT1\Model\Db;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -141,6 +142,13 @@ class CustomersImport extends BaseImport
                 Tlog::getInstance()->info(
                     "Created customer " . $event->getCustomer()->getId() . " from $client->ref ($client->id)"
                 );
+
+                $customerTemp = new CustomerTemp();
+                $customerTemp
+                    ->setEmail($client->email)
+                    ->setPassword($client->motdepasse)
+                    ->save()
+                ;
 
                 // Import customer addresses
                 $a_hdl = $this->t1db->query("select * from adresse where client=?", array($client->id));
