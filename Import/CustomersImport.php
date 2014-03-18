@@ -108,7 +108,7 @@ class CustomersImport extends BaseImport
                 $country = $this->getT2Country($client->pays);
 
                 try {
-                    $sponsor = $this->cust_corresp->getT2($client->parrain)->getRef();
+                    $sponsor = $this->cust_corresp->getT2($client->parrain);
                 } catch (ImportException $ex) {
                     $sponsor = '';
                 }
