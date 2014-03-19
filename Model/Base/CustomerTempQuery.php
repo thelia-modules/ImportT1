@@ -52,9 +52,9 @@ abstract class CustomerTempQuery extends ModelCriteria
     /**
      * Initializes internal state of \ImportT1\Model\Base\CustomerTempQuery object.
      *
-     * @param     string $dbName The database name
-     * @param     string $modelName The phpName of a model, e.g. 'Book'
-     * @param     string $modelAlias The alias for the model in this query, e.g. 'b'
+     * @param string $dbName     The database name
+     * @param string $modelName  The phpName of a model, e.g. 'Book'
+     * @param string $modelAlias The alias for the model in this query, e.g. 'b'
      */
     public function __construct($dbName = 'thelia', $modelName = '\\ImportT1\\Model\\CustomerTemp', $modelAlias = null)
     {
@@ -64,8 +64,8 @@ abstract class CustomerTempQuery extends ModelCriteria
     /**
      * Returns a new ChildCustomerTempQuery object.
      *
-     * @param     string $modelAlias The alias of a model in the query
-     * @param     Criteria $criteria Optional Criteria to build the query from
+     * @param string   $modelAlias The alias of a model in the query
+     * @param Criteria $criteria   Optional Criteria to build the query from
      *
      * @return ChildCustomerTempQuery
      */
@@ -94,7 +94,7 @@ abstract class CustomerTempQuery extends ModelCriteria
      * $obj  = $c->findPk(12, $con);
      * </code>
      *
-     * @param mixed $key Primary key to use for the query
+     * @param mixed               $key Primary key to use for the query
      * @param ConnectionInterface $con an optional connection object
      *
      * @return ChildCustomerTemp|array|mixed the result, formatted by the current formatter
@@ -125,10 +125,10 @@ abstract class CustomerTempQuery extends ModelCriteria
      * Find object by primary key using raw SQL to go fast.
      * Bypass doSelect() and the object formatter by using generated code.
      *
-     * @param     mixed $key Primary key to use for the query
-     * @param     ConnectionInterface $con A connection object
+     * @param mixed               $key Primary key to use for the query
+     * @param ConnectionInterface $con A connection object
      *
-     * @return   ChildCustomerTemp A model object, or null if the key is not found
+     * @return ChildCustomerTemp A model object, or null if the key is not found
      */
     protected function findPkSimple($key, $con)
     {
@@ -155,8 +155,8 @@ abstract class CustomerTempQuery extends ModelCriteria
     /**
      * Find object by primary key.
      *
-     * @param     mixed $key Primary key to use for the query
-     * @param     ConnectionInterface $con A connection object
+     * @param mixed               $key Primary key to use for the query
+     * @param ConnectionInterface $con A connection object
      *
      * @return ChildCustomerTemp|array|mixed the result, formatted by the current formatter
      */
@@ -176,8 +176,8 @@ abstract class CustomerTempQuery extends ModelCriteria
      * <code>
      * $objs = $c->findPks(array(12, 56, 832), $con);
      * </code>
-     * @param     array $keys Primary keys to use for the query
-     * @param     ConnectionInterface $con an optional connection object
+     * @param array               $keys Primary keys to use for the query
+     * @param ConnectionInterface $con  an optional connection object
      *
      * @return ObjectCollection|array|mixed the list of results, formatted by the current formatter
      */
@@ -198,26 +198,24 @@ abstract class CustomerTempQuery extends ModelCriteria
     /**
      * Filter the query by primary key
      *
-     * @param     mixed $key Primary key to use for the query
+     * @param mixed $key Primary key to use for the query
      *
      * @return ChildCustomerTempQuery The current query, for fluid interface
      */
     public function filterByPrimaryKey($key)
     {
-
         return $this->addUsingAlias(CustomerTempTableMap::ID, $key, Criteria::EQUAL);
     }
 
     /**
      * Filter the query by a list of primary keys
      *
-     * @param     array $keys The list of primary key to use for the query
+     * @param array $keys The list of primary key to use for the query
      *
      * @return ChildCustomerTempQuery The current query, for fluid interface
      */
     public function filterByPrimaryKeys($keys)
     {
-
         return $this->addUsingAlias(CustomerTempTableMap::ID, $keys, Criteria::IN);
     }
 
@@ -231,11 +229,11 @@ abstract class CustomerTempQuery extends ModelCriteria
      * $query->filterById(array('min' => 12)); // WHERE id > 12
      * </code>
      *
-     * @param     mixed $id The value to use as filter.
-     *              Use scalar values for equality.
-     *              Use array values for in_array() equivalent.
-     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     * @param mixed  $id         The value to use as filter.
+     *                           Use scalar values for equality.
+     *                           Use array values for in_array() equivalent.
+     *                           Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
      * @return ChildCustomerTempQuery The current query, for fluid interface
      */
@@ -271,9 +269,9 @@ abstract class CustomerTempQuery extends ModelCriteria
      * $query->filterByEmail('%fooValue%'); // WHERE email LIKE '%fooValue%'
      * </code>
      *
-     * @param     string $email The value to use as filter.
-     *              Accepts wildcards (* and % trigger a LIKE)
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     * @param string $email      The value to use as filter.
+     *                           Accepts wildcards (* and % trigger a LIKE)
+     * @param string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
      * @return ChildCustomerTempQuery The current query, for fluid interface
      */
@@ -300,9 +298,9 @@ abstract class CustomerTempQuery extends ModelCriteria
      * $query->filterByPassword('%fooValue%'); // WHERE password LIKE '%fooValue%'
      * </code>
      *
-     * @param     string $password The value to use as filter.
-     *              Accepts wildcards (* and % trigger a LIKE)
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     * @param string $password   The value to use as filter.
+     *                           Accepts wildcards (* and % trigger a LIKE)
+     * @param string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
      * @return ChildCustomerTempQuery The current query, for fluid interface
      */
@@ -329,12 +327,12 @@ abstract class CustomerTempQuery extends ModelCriteria
      * $query->filterByProcessed('yes'); // WHERE processed = true
      * </code>
      *
-     * @param     boolean|string $processed The value to use as filter.
-     *              Non-boolean arguments are converted using the following rules:
-     *                * 1, '1', 'true',  'on',  and 'yes' are converted to boolean true
-     *                * 0, '0', 'false', 'off', and 'no'  are converted to boolean false
-     *              Check on string values is case insensitive (so 'FaLsE' is seen as 'false').
-     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     * @param boolean|string $processed  The value to use as filter.
+     *                                   Non-boolean arguments are converted using the following rules:
+     *                                   * 1, '1', 'true',  'on',  and 'yes' are converted to boolean true
+     *                                   * 0, '0', 'false', 'off', and 'no'  are converted to boolean false
+     *                                   Check on string values is case insensitive (so 'FaLsE' is seen as 'false').
+     * @param string         $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
      * @return ChildCustomerTempQuery The current query, for fluid interface
      */
@@ -350,7 +348,7 @@ abstract class CustomerTempQuery extends ModelCriteria
     /**
      * Exclude object from result
      *
-     * @param   ChildCustomerTemp $customerTemp Object to remove from the list of results
+     * @param ChildCustomerTemp $customerTemp Object to remove from the list of results
      *
      * @return ChildCustomerTempQuery The current query, for fluid interface
      */
@@ -366,8 +364,8 @@ abstract class CustomerTempQuery extends ModelCriteria
     /**
      * Deletes all rows from the customer_temp table.
      *
-     * @param ConnectionInterface $con the connection to use
-     * @return int The number of affected rows (if supported by underlying database driver).
+     * @param  ConnectionInterface $con the connection to use
+     * @return int                 The number of affected rows (if supported by underlying database driver).
      */
     public function doDeleteAll(ConnectionInterface $con = null)
     {
@@ -398,13 +396,13 @@ abstract class CustomerTempQuery extends ModelCriteria
     /**
      * Performs a DELETE on the database, given a ChildCustomerTemp or Criteria object OR a primary key value.
      *
-     * @param mixed               $values Criteria or ChildCustomerTemp object or primary key or array of primary keys
-     *              which is used to create the DELETE statement
-     * @param ConnectionInterface $con the connection to use
-     * @return int The number of affected rows (if supported by underlying database driver).  This includes CASCADE-related rows
-     *                if supported by native driver or if emulated using Propel.
-     * @throws PropelException Any exceptions caught during processing will be
-     *         rethrown wrapped into a PropelException.
+     * @param  mixed               $values Criteria or ChildCustomerTemp object or primary key or array of primary keys
+     *                                     which is used to create the DELETE statement
+     * @param  ConnectionInterface $con    the connection to use
+     * @return int                 The number of affected rows (if supported by underlying database driver).  This includes CASCADE-related rows
+     *                                    if supported by native driver or if emulated using Propel.
+     * @throws PropelException     Any exceptions caught during processing will be
+     *                                    rethrown wrapped into a PropelException.
      */
      public function delete(ConnectionInterface $con = null)
      {
@@ -423,7 +421,6 @@ abstract class CustomerTempQuery extends ModelCriteria
             // use transaction because $criteria could contain info
             // for more than one table or we could emulating ON DELETE CASCADE, etc.
             $con->beginTransaction();
-
 
         CustomerTempTableMap::removeInstanceFromPool($criteria);
 

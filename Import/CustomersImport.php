@@ -233,8 +233,7 @@ class CustomersImport extends BaseImport
                         ->save();
                 }
             }
-        }
-        catch (\Exception $ex) {
+        } catch (\Exception $ex) {
             Tlog::getInstance()->error("Failed to import CutsomerTitles (not a problem for Thelia 1.4.x)");
         }
     }

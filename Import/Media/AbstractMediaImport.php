@@ -30,11 +30,11 @@ use Thelia\Log\Tlog;
 abstract class AbstractMediaImport extends BaseImport
 {
 
-    protected abstract function getMediaModelInstance($t2_object_id);
+    abstract protected function getMediaModelInstance($t2_object_id);
 
-    protected abstract function getMediaList($t1_object_id);
+    abstract protected function getMediaList($t1_object_id);
 
-    protected abstract function getMediaDesc($t1_object_id);
+    abstract protected function getMediaDesc($t1_object_id);
 
     public function doImportMedia($t1_object_id, $t2_object_id, $client_path, $local_path)
     {

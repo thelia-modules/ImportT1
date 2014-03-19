@@ -4,7 +4,6 @@ namespace ImportT1\Model;
 
 use ImportT1\Model\Base\CustomerTempQuery as BaseCustomerTempQuery;
 
-
 /**
  * Skeleton subclass for performing query and update operations on the 'customer_temp' table.
  *

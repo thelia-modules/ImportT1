@@ -67,6 +67,11 @@ class CustomerController extends BaseFrontController
                     $customer->setPassword($form->get('password')->getData())
                         ->save();
 
+                    $customerTemp
+                        ->setProcessed(true)
+                        ->save();
+                    ;
+
                     $this->dispatch(TheliaEvents::CUSTOMER_LOGIN, new CustomerLoginEvent($customer));
                     $this->redirectSuccess($customerLoginForm);
                 }
@@ -75,9 +80,6 @@ class CustomerController extends BaseFrontController
 
             }
 
-
-
-
         }
     }
-} 
+}

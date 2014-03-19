@@ -42,7 +42,6 @@ class FoldersImport extends BaseImport
 
     private $fld_corresp;
 
-
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
 

@@ -27,13 +27,11 @@ use ImportT1\Model\Db;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thelia\Core\Translation\Translator;
-use Thelia\Exception\UrlRewritingException;
 use Thelia\Log\Tlog;
 use Thelia\Model\Country;
 use Thelia\Model\CountryI18nQuery;
 use Thelia\Model\CountryQuery;
 use Thelia\Model\CurrencyQuery;
-use Thelia\Model\CustomerQuery;
 use Thelia\Model\CustomerTitle;
 use Thelia\Model\CustomerTitleI18nQuery;
 use Thelia\Model\Lang;
@@ -57,7 +55,6 @@ class BaseImport
         $this->t1db = $t1db;
 
         $this->t1db->connect();
-
 
         $hdl = $this->t1db->query("select valeur from variable where nom = 'version'");
 
@@ -87,7 +84,7 @@ class BaseImport
     private $currency_cache;
 
     /**
-     * @param bool $t1id
+     * @param  bool                   $t1id
      * @return \Thelia\Model\Currency
      * @throws ImportException
      */
@@ -100,8 +97,7 @@ class BaseImport
             } else {
                 try {
                     $obj = $this->t1db->query_obj("select * from devise where defaut=1");
-                }
-                catch (\Exception $ex) {
+                } catch (\Exception $ex) {
                     // Thelia 1.5.1, no default column
                     $obj = $this->t1db->query_obj("select * from devise order by id asc limit 1");
                 }
@@ -131,7 +127,6 @@ class BaseImport
 
         return $this->currency_cache;
     }
-
 
     private $lang_cache = array();
 
@@ -177,8 +172,7 @@ class BaseImport
                             ->setCode($obj->code)
                             ->setLocale("$obj->code"."_".strtoupper($obj->code));
                         ;
-                    }
-                    else {
+                    } else {
                         $lang
                             ->setTitle("Imported Thelia lang $id_lang_thelia_1")
                             ->setCode("")
@@ -240,8 +234,7 @@ class BaseImport
 
                 // Get the T2 title for this lang
                 $title = CustomerTitleI18nQuery::create()->filterByLocale($lang->getLocale())->findOneByShort($obj->court);
-            }
-            catch (\Exception $ex) {
+            } catch (\Exception $ex) {
                 if ($id_title_thelia_1 == 1 || $id_title_thelia_1 > 3)
                     $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('Mr');
                 else if ($id_title_thelia_1 == 2)
@@ -264,7 +257,6 @@ class BaseImport
         return $this->title_cache[$id_title_thelia_1];
     }
 
-
     private $country_cache = array();
 
     /**
@@ -282,8 +274,7 @@ class BaseImport
 
             try {
                 $obj = $this->t1db->query_obj("select isoalpha3 from pays where id=?", array($id_country_thelia_1));
-            }
-            catch (\Exception $ex) {
+            } catch (\Exception $ex) {
                 $obj = false;
             }
 
@@ -310,8 +301,7 @@ class BaseImport
                 }
 
                 $country = CountryQuery::create()->findPk($countryI18n->getId());
-            }
-            else {
+            } else {
                 // Get the T2 country
                 $country = CountryQuery::create()->findOneByIsoalpha3($obj->isoalpha3);
             }
@@ -371,8 +361,7 @@ class BaseImport
                         $ex->getMessage()
                     );
             }
-        }
-        else {
+        } else {
             Tlog::getInstance()
                 ->addNotice(
                     "No rewritten URL was found for locale $locale, fond '$fond_t1', with params '$params_t1', lang $id_lang_t1"

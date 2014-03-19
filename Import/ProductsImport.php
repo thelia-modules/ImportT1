@@ -56,7 +56,6 @@ class ProductsImport extends BaseImport
 {
     private $product_corresp, $tpl_corresp, $tax_corresp;
 
-
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
 
@@ -136,8 +135,7 @@ class ProductsImport extends BaseImport
                 try {
                     $dossier = $this->cat_corresp->getT2($produit->rubrique);
 
-                }
-                catch (\Exception $ex) {
+                } catch (\Exception $ex) {
                     // Create the '0' folder
                     $root = new Category();
 
@@ -332,11 +330,10 @@ class ProductsImport extends BaseImport
                                     if (intval($caracval->caracdisp) != 0) {
                                         $feature_value = $this->feat_av_corresp->getT2($caracval->caracdisp);
                                         $is_text = false;
-                                    } else if ($caracval->valeur != '') {
+                                    } elseif ($caracval->valeur != '') {
                                         $feature_value = $caracval->valeur;
                                         $is_text = true;
-                                    }
-                                    else {
+                                    } else {
                                         continue;
                                     }
 

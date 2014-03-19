@@ -51,7 +51,6 @@ class CategoriesImport extends BaseImport
 
     private $cat_corresp, $attr_corresp, $feat_corresp, $tpl_corresp, $content_corresp;
 
-
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
 
