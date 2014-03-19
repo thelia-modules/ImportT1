@@ -47,8 +47,8 @@ class BaseImportTest extends \PHPUnit_Framework_TestCase
         $bi->getT2Lang(1);
     }
 
-    public function testGetCountry() {
-
+    public function testGetCountry()
+    {
         $bi = new BaseImport($this->dispatcher, $this->thelia1_db);
 
         $res = $bi->getT2Country(64);

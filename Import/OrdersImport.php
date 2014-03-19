@@ -48,7 +48,6 @@ class OrdersImport extends BaseImport
 
     private $product_corresp, $attr_corresp, $tax_corresp, $order_corresp, $cust_corresp;
 
-
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
 

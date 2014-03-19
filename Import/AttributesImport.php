@@ -40,7 +40,6 @@ class AttributesImport extends BaseImport
     private $attr_corresp;
     private $attr_av_corresp;
 
-
     public function getTotalCount()
     {
         return $this->t1db->num_rows($this->t1db->query("select id from declinaison"));

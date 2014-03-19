@@ -23,6 +23,7 @@
 
 namespace ImportT1\Import;
 
+use ImportT1\Model\CustomerTemp;
 use ImportT1\Model\Db;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -108,7 +109,7 @@ class CustomersImport extends BaseImport
                 $country = $this->getT2Country($client->pays);
 
                 try {
-                    $sponsor = $this->cust_corresp->getT2($client->parrain)->getRef();
+                    $sponsor = $this->cust_corresp->getT2($client->parrain);
                 } catch (ImportException $ex) {
                     $sponsor = '';
                 }
@@ -141,6 +142,13 @@ class CustomersImport extends BaseImport
                 Tlog::getInstance()->info(
                     "Created customer " . $event->getCustomer()->getId() . " from $client->ref ($client->id)"
                 );
+
+                $customerTemp = new CustomerTemp();
+                $customerTemp
+                    ->setEmail($client->email)
+                    ->setPassword($client->motdepasse)
+                    ->save()
+                ;
 
                 // Import customer addresses
                 $a_hdl = $this->t1db->query("select * from adresse where client=?", array($client->id));
@@ -225,8 +233,7 @@ class CustomersImport extends BaseImport
                         ->save();
                 }
             }
-        }
-        catch (\Exception $ex) {
+        } catch (\Exception $ex) {
             Tlog::getInstance()->error("Failed to import CutsomerTitles (not a problem for Thelia 1.4.x)");
         }
     }

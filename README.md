@@ -32,9 +32,7 @@ Next, go to your Thelia admin panel for module activation.
 
 ## Customer passwords ##
 
-The import process can't guess your customer password. At this time, the import process set the password of imported customers to its email address. Thus, the customer joe@cool.com will have the password joe@cool.com
-
-This is a temporary solution, an improvement is in the pipe.
+Once the import ended, this module must remain enabled ! A temporary table (customer_temp) is created for storing password in Thelia 1 format.
 
 ## Payment and Delivery modules ##
 

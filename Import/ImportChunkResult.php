@@ -21,7 +21,6 @@
 /*                                                                                   */
 /*************************************************************************************/
 
-
 namespace ImportT1\Import;
 
 class ImportChunkResult
@@ -49,6 +48,7 @@ class ImportChunkResult
     public function setCount($count)
     {
         $this->count = $count;
+
         return $this;
     }
 
@@ -67,6 +67,7 @@ class ImportChunkResult
     public function setErrors($errors)
     {
         $this->errors = $errors;
+
         return $this;
     }
 }

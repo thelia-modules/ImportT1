@@ -413,8 +413,8 @@ class ImportT1Controller extends BaseAdminController
         );
     }
 
-    protected function getErrors($reverse) {
-
+    protected function getErrors($reverse)
+    {
         $errors = array();
 
         if ($fh = fopen($this->log_file, 'r')) {

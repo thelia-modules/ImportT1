@@ -41,7 +41,6 @@ class ContentsImport extends BaseImport
 {
     private $content_corresp;
 
-
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
 
@@ -101,8 +100,7 @@ class ContentsImport extends BaseImport
                 try {
                     $dossier = $this->fld_corresp->getT2($contenu->dossier);
 
-                }
-                catch (\Exception $ex) {
+                } catch (\Exception $ex) {
                     // Create the '0' folder
                     $root = new Folder();
 

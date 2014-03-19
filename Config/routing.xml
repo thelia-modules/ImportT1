@@ -2,6 +2,12 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
+    <!-- Login -->
+    <route id="importT1.customer.login.process" path="/login" methods="post">
+        <default key="_controller">ImportT1\Controller\Front\CustomerController::loginAction</default>
+        <default key="_view">login</default>
+    </route>
+
     <route id="importT1.main" path="/admin/module/ImportT1">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::indexAction</default>
     </route>

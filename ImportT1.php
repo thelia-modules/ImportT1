@@ -23,6 +23,8 @@
 
 namespace ImportT1;
 
+use Propel\Runtime\Connection\ConnectionInterface;
+use Thelia\Install\Database;
 use Thelia\Module\BaseModule;
 
 class ImportT1 extends BaseModule
@@ -30,5 +32,11 @@ class ImportT1 extends BaseModule
     public function getCode()
     {
         return 'ImportT1';
+    }
+
+    public function postActivation(ConnectionInterface $con = null)
+    {
+        $database = new Database($con->getWrappedConnection());
+        $database->insertSql(null, array(__DIR__ . "/Config/thelia.sql"));
     }
 }
