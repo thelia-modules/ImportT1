@@ -235,6 +235,7 @@ class OrdersImport extends BaseImport
                         ->setInvoiceOrderAddressId($billing_adr->getId())
                         ->setDeliveryModuleId($deliveryModule->getId())
                         ->setPaymentModuleId($paymentModule->getId())
+                        ->setDiscount($commande->remise)
                         ->save($con);
 
                     // Update the order reference
@@ -285,8 +286,8 @@ class OrdersImport extends BaseImport
                             ->setDescription($vp->description)
                             ->setPostscriptum("") // Undefined in T1
                             ->setQuantity($vp->quantite)
-                            ->setPrice($vp->prixu)
-                            ->setPromoPrice($vp->prixu)
+                            ->setPrice($vp->prixu / (1+($vp->tva/100)))
+                            ->setPromoPrice($vp->prixu / (1+($vp->tva/100)))
                             ->setWasNew(false) // Not Available in T1
                             ->setWasInPromo(false) // Not Available in T1
                             ->setWeight(0) // Not Available in T1
