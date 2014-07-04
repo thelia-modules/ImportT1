@@ -43,7 +43,7 @@ class CustomerController extends BaseFrontController
     {
         $customerController = new BaseCustomerController();
         $customerController->setContainer($this->container);
-        $customerController->loginAction();
+        $response = $customerController->loginAction();
 
         if (! $this->getSecurityContext()->hasCustomerUser()) {
 
@@ -81,5 +81,7 @@ class CustomerController extends BaseFrontController
             }
 
         }
+        
+        return $response;
     }
 }
