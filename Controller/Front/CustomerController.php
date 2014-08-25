@@ -31,6 +31,7 @@ use Thelia\Core\Event\Customer\CustomerLoginEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Form\CustomerLogin;
 use Thelia\Model\CustomerQuery;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Class CustomerController
@@ -73,7 +74,10 @@ class CustomerController extends BaseFrontController
                     ;
 
                     $this->dispatch(TheliaEvents::CUSTOMER_LOGIN, new CustomerLoginEvent($customer));
-                    $this->redirectSuccess($customerLoginForm);
+                    
+                    $successUrl = $customerLoginForm->getSuccessUrl();
+
+                    $response = RedirectResponse::create($successUrl);
                 }
 
             } catch (\Exception $e) {
