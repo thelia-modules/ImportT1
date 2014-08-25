@@ -300,7 +300,7 @@ class OrdersImport extends BaseImport
                         $orderProductTax = new OrderProductTax();
 
                         $orderProductTax
-                            ->setAmount($vp->prixu * $vp->quantite * $vp->tva / 100)
+                            ->setAmount($orderProduct->getPrice() * ($vp->tva / 100))
                             ->setPromoAmount(0)
                             ->setOrderProduct($orderProduct)
                             ->setTitle("TVA $vp->tva %")
