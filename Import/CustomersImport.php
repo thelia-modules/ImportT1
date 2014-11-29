@@ -32,6 +32,7 @@ use Thelia\Core\Event\Customer\CustomerCreateOrUpdateEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Log\Tlog;
 use Thelia\Model\AddressQuery;
+use Thelia\Model\Base\OrderAddressQuery;
 use Thelia\Model\CustomerQuery;
 use Thelia\Model\CustomerTitle;
 use Thelia\Model\CustomerTitleQuery;
@@ -64,6 +65,7 @@ class CustomersImport extends BaseImport
         // Empty address, customer and customer title table
         OrderQuery::create()->deleteAll();
         AddressQuery::create()->deleteAll();
+        OrderAddressQuery::create()->deleteAll();
         CustomerQuery::create()->deleteAll();
 
         // Also empty url rewriting table
@@ -75,7 +77,9 @@ class CustomersImport extends BaseImport
 
         $this->cust_corresp->reset();
 
-        if ($this->thelia_version > 150) $this->importCustomerTitle();
+        if ($this->thelia_version > 150) {
+            $this->importCustomerTitle();
+        }
     }
 
     public function import($startRecord = 0)
@@ -90,7 +94,6 @@ class CustomersImport extends BaseImport
         );
 
         while ($hdl && $client = $this->t1db->fetch_object($hdl)) {
-
             $count++;
 
             try {
@@ -116,7 +119,6 @@ class CustomersImport extends BaseImport
 
                 $event = new CustomerCreateOrUpdateEvent(
                     $title->getId(),
-
                     $client->prenom,
                     $client->nom,
                     $client->adresse1,
@@ -154,7 +156,6 @@ class CustomersImport extends BaseImport
                 $a_hdl = $this->t1db->query("select * from adresse where client=?", array($client->id));
 
                 while ($a_hdl && $adresse = $this->t1db->fetch_object($a_hdl)) {
-
                     try {
                         $title = $this->getT2CustomerTitle($adresse->raison);
                         $country = $this->getT2Country($adresse->pays);
@@ -194,7 +195,6 @@ class CustomersImport extends BaseImport
 
                 $this->cust_corresp->addEntry($client->id, $event->getCustomer()->getId());
             } catch (\Exception $ex) {
-
                 Tlog::getInstance()->addError("Failed to import customer ref $client->ref :", $ex->getMessage());
 
                 $errors++;
@@ -212,7 +212,6 @@ class CustomersImport extends BaseImport
             $hdl = $this->t1db->query("select * from raison order by classement");
 
             while ($hdl && $raison = $this->t1db->fetch_object($hdl)) {
-
                 $ct = new CustomerTitle();
 
                 $descs = $this->t1db->query_list(
@@ -221,7 +220,6 @@ class CustomersImport extends BaseImport
                 );
 
                 foreach ($descs as $desc) {
-
                     $lang = $this->getT2Lang($desc->lang);
 
                     $ct
@@ -237,5 +235,4 @@ class CustomersImport extends BaseImport
             Tlog::getInstance()->error("Failed to import CutsomerTitles (not a problem for Thelia 1.4.x)");
         }
     }
-
 }
