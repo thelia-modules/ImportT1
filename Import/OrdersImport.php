@@ -29,9 +29,9 @@ use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thelia\Condition\ConditionCollection;
 use Thelia\Log\Tlog;
+use Thelia\Model\Cart;
 use Thelia\Model\CustomerQuery;
 use Thelia\Model\Map\OrderTableMap;
-use Thelia\Model\Module;
 use Thelia\Model\ModuleQuery;
 use Thelia\Model\Order;
 use Thelia\Model\OrderAddress;
@@ -46,7 +46,11 @@ use Thelia\Module\BaseModule;
 class OrdersImport extends BaseImport
 {
 
-    private $product_corresp, $attr_corresp, $tax_corresp, $order_corresp, $cust_corresp;
+    private $product_corresp;
+    private $attr_corresp;
+    private $tax_corresp;
+    private $order_corresp;
+    private $cust_corresp;
 
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
@@ -90,7 +94,6 @@ class OrdersImport extends BaseImport
         $hdl = $this->t1db->query("select * from statut where id > ?", array(5));
 
         while ($hdl && $statut = $this->t1db->fetch_object($hdl)) {
-
             $ct = new OrderStatus();
 
             $descs = $this->t1db->query_list(
@@ -99,7 +102,6 @@ class OrdersImport extends BaseImport
             );
 
             foreach ($descs as $desc) {
-
                 $lang = $this->getT2Lang($desc->lang);
 
                 $ct
@@ -130,7 +132,6 @@ class OrdersImport extends BaseImport
             );
 
         while ($hdl && $commande = $this->t1db->fetch_object($hdl)) {
-
             $count++;
 
             try {
@@ -144,11 +145,9 @@ class OrdersImport extends BaseImport
             }
 
             try {
-
                 if (null === $customer = CustomerQuery::create()->findPk(
-                        $this->cust_corresp->getT2($commande->client)
-                    )
-                ) {
+                    $this->cust_corresp->getT2($commande->client)
+                )) {
                     throw new ImportException("Failed to find customer ID=$commande->client");
                 }
 
@@ -158,19 +157,17 @@ class OrdersImport extends BaseImport
 
                 // Create invoice address
                 if (false == $adr_livr = $this->t1db->query_obj(
-                        "select * from venteadr where id=?",
-                        array($commande->adrlivr)
-                    )
-                ) {
+                    "select * from venteadr where id=?",
+                    array($commande->adrlivr)
+                )) {
                     throw new ImportException("Failed to find delivery adresse ID=$commande->adrlivr");
                 }
 
                 // Create invoice address
                 if (false == $adr_fact = $this->t1db->query_obj(
-                        "select * from venteadr where id=?",
-                        array($commande->adrfact)
-                    )
-                ) {
+                    "select * from venteadr where id=?",
+                    array($commande->adrfact)
+                )) {
                     throw new ImportException("Failed to find billing adresse ID=$commande->adrfact");
                 }
 
@@ -179,7 +176,6 @@ class OrdersImport extends BaseImport
                 $con->beginTransaction();
 
                 try {
-
                     $order = new Order();
 
                     $delivery_adr = new OrderAddress();
@@ -219,6 +215,10 @@ class OrdersImport extends BaseImport
                     $paymentModule  = ModuleQuery::create()->findOneByType(BaseModule::PAYMENT_MODULE_TYPE);
 
 
+                    // Create a cart (now required)
+                    $cart = new Cart();
+                    $cart->save();
+
                     $order
                         ->setRef($commande->ref)
                         ->setCustomer($customer)
@@ -236,6 +236,7 @@ class OrdersImport extends BaseImport
                         ->setDeliveryModuleId($deliveryModule->getId())
                         ->setPaymentModuleId($paymentModule->getId())
                         ->setDiscount($commande->remise)
+                        ->setCartId($cart->getId())
                         ->save($con);
 
                     // Update the order reference
@@ -246,7 +247,6 @@ class OrdersImport extends BaseImport
 
 
                     if ($commande->remise > 0) {
-
                         $coupon = new OrderCoupon();
 
                         $coupon
@@ -268,7 +268,6 @@ class OrdersImport extends BaseImport
                     $vps = $this->t1db->query_list("select * from venteprod where commande=?", array($commande->id));
 
                     foreach ($vps as $vp) {
-
                         $parent = 0;
 
                         if (isset($vp->parent) && $vp->parent != 0) {
@@ -315,7 +314,6 @@ class OrdersImport extends BaseImport
                     throw $ex;
                 }
             } catch (\Exception $ex) {
-
                 Tlog::getInstance()->addError("Failed to import order ref $commande->ref: ", $ex->getMessage());
 
                 $errors++;
