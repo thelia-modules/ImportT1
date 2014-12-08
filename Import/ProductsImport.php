@@ -54,7 +54,9 @@ use Thelia\TaxEngine\TaxType\PricePercentTaxType;
 
 class ProductsImport extends BaseImport
 {
-    private $product_corresp, $tpl_corresp, $tax_corresp;
+    private $product_corresp;
+    private $tpl_corresp;
+    private $tax_corresp;
 
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
@@ -127,7 +129,6 @@ class ProductsImport extends BaseImport
         $document_import = new ProductDocumentImport($this->dispatcher, $this->t1db);
 
         while ($hdl && $produit = $this->t1db->fetch_object($hdl)) {
-
             $count++;
 
             // Put contents on the root folder in a special folder
@@ -160,7 +161,6 @@ class ProductsImport extends BaseImport
             $rubrique = $this->cat_corresp->getT2($produit->rubrique);
 
             if ($rubrique > 0) {
-
                 try {
                     $this->product_corresp->getT2($produit->id);
 
@@ -172,7 +172,6 @@ class ProductsImport extends BaseImport
                 }
 
                 try {
-
                     $event = new ProductCreateEvent();
 
                     $idx = 0;
@@ -189,8 +188,9 @@ class ProductsImport extends BaseImport
                     $produit->prix = $produit->prix / (1 + $produit->tva / 100);
                     $produit->prix2 = $produit->prix2 / (1 + $produit->tva / 100);
 
-                    foreach ($descs as $objdesc) {
+                    $product_id = 0;
 
+                    foreach ($descs as $objdesc) {
                         $lang = $this->getT2Lang($objdesc->lang);
 
                         // A title is required to create the rewritten URL
@@ -203,7 +203,6 @@ class ProductsImport extends BaseImport
                         }
 
                         if ($idx == 0) {
-
                             $event
                                 ->setRef($produit->ref)
                                 ->setLocale($lang->getLocale())
@@ -279,8 +278,11 @@ class ProductsImport extends BaseImport
                             // Update position
                             // ---------------
 
-                            $update_position_event = new UpdatePositionEvent($product_id,
-                                UpdatePositionEvent::POSITION_ABSOLUTE, $produit->classement);
+                            $update_position_event = new UpdatePositionEvent(
+                                $product_id,
+                                UpdatePositionEvent::POSITION_ABSOLUTE,
+                                $produit->classement
+                            );
 
                             $this->dispatcher->dispatch(TheliaEvents::PRODUCT_UPDATE_POSITION, $update_position_event);
 
@@ -298,7 +300,6 @@ class ProductsImport extends BaseImport
                             ); // type: 1 = produit, 0=rubrique
 
                             foreach ($contents as $content) {
-
                                 try {
                                     $content_event = new ProductAddContentEvent($event->getProduct(
                                     ), $this->content_corresp->getT2($content->contenu));
@@ -324,9 +325,7 @@ class ProductsImport extends BaseImport
                             );
 
                             foreach ($caracvals as $caracval) {
-
                                 try {
-
                                     if (intval($caracval->caracdisp) != 0) {
                                         $feature_value = $this->feat_av_corresp->getT2($caracval->caracdisp);
                                         $is_text = false;
@@ -383,7 +382,6 @@ class ProductsImport extends BaseImport
                                 );
 
                                 foreach ($declidisps as $declidisp) {
-
                                     $disabled = $this->t1db->query_list(
                                         "select id from exdecprod where declidisp=? and produit=?",
                                         array($declidisp->id, $produit->id)
@@ -456,10 +454,13 @@ class ProductsImport extends BaseImport
                             $document_import->importMedia($produit->id, $product_id);
                         }
 
+                        Tlog::getInstance()->info(sprintf("Updating product ID=%d, data for lang %s.", $product_id, $lang->getCode()));
+
                         // Update the newly created product
                         $update_event = new ProductUpdateEvent($product_id);
 
                         $update_event
+                            ->setRef($produit->ref)
                             ->setLocale($lang->getLocale())
                             ->setTitle($objdesc->titre)
                             ->setChapo($objdesc->chapo)
@@ -482,7 +483,6 @@ class ProductsImport extends BaseImport
                         $idx++;
                     }
                 } catch (\Exception $ex) {
-
                     Tlog::getInstance()->addError("Failed to import product ID=$produit->id: ", $ex->getMessage());
 
                     $errors++;
@@ -506,7 +506,6 @@ class ProductsImport extends BaseImport
         $taux_tvas_vp = $this->t1db->query_list("select distinct tva from venteprod");
 
         foreach ($taux_tvas_vp as $tvp) {
-
             $found = false;
 
             foreach ($taux_tvas as $tv) {
@@ -526,7 +525,6 @@ class ProductsImport extends BaseImport
         $defaultCountry = CountryQuery::create()->findOneByByDefault(true);
 
         foreach ($taux_tvas as $taux_tva) {
-
             $ppe = new PricePercentTaxType();
 
             $ppe->setPercentage($taux_tva->tva);
@@ -596,7 +594,6 @@ class ProductsImport extends BaseImport
         );
 
         foreach ($accessoires as $accessoire) {
-
             try {
                 $product = ProductQuery::create()->findPk($this->product_corresp->getT2($accessoire->produit));
 
