@@ -36,6 +36,7 @@ use Thelia\Model\Base\OrderAddressQuery;
 use Thelia\Model\CustomerQuery;
 use Thelia\Model\CustomerTitle;
 use Thelia\Model\CustomerTitleQuery;
+use Thelia\Model\Map\CustomerTitleTableMap;
 use Thelia\Model\Map\RewritingUrlTableMap;
 use Thelia\Model\OrderQuery;
 use Thelia\Model\RewritingUrlQuery;
@@ -206,9 +207,13 @@ class CustomersImport extends BaseImport
 
     public function importCustomerTitle()
     {
-        CustomerTitleQuery::create()->deleteAll();
+        $con = Propel::getConnection(CustomerTitleTableMap::DATABASE_NAME);
+
+        $con->beginTransaction();
 
         try {
+            CustomerTitleQuery::create()->deleteAll();
+
             $hdl = $this->t1db->query("select * from raison order by classement");
 
             while ($hdl && $raison = $this->t1db->fetch_object($hdl)) {
@@ -231,8 +236,14 @@ class CustomersImport extends BaseImport
                         ->save();
                 }
             }
+
+            $con->commit();
+
         } catch (\Exception $ex) {
-            Tlog::getInstance()->error("Failed to import CutsomerTitles (not a problem for Thelia 1.4.x)");
+            $con->rollBack();
+            Tlog::getInstance()->error(
+                "Failed to import Thelia 1 customer titles (not a problem for Thelia 1.4.x). Cause: " . $ex->getMessage()
+            );
         }
     }
 }

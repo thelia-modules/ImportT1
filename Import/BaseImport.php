@@ -84,7 +84,7 @@ class BaseImport
     private $currency_cache;
 
     /**
-     * @param  bool                   $t1id
+     * @param  bool $t1id
      * @return \Thelia\Model\Currency
      * @throws ImportException
      */
@@ -108,7 +108,8 @@ class BaseImport
                     Translator::getInstance()->trans(
                         "Failed to find the Thelia 1 currency %cur",
                         array('%cur' => $t1id === false ? 'Default' : "ID=$t1id")
-                    ));
+                    )
+                );
 
             }
 
@@ -119,7 +120,8 @@ class BaseImport
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 lang for Thelia 1 lang code '%code'",
                         array("%code" => $obj->code)
-                    ));
+                    )
+                );
             }
 
             $this->currency_cache = $currency;
@@ -141,23 +143,27 @@ class BaseImport
 
         if (!isset($this->lang_cache[$id_lang_thelia_1])) {
 
-            if ($id_lang_thelia_1 > 0)
+            if ($id_lang_thelia_1 > 0) {
                 $obj = $this->t1db->query_obj("select * from lang where id=?", array($id_lang_thelia_1));
-            else
+            } else {
                 $obj = $this->t1db->query_obj("select * from lang order by id asc limit 1");
+            }
 
             if ($obj == false || $obj == null) {
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 1 lang for id '%id'",
                         array("%id" => $id_lang_thelia_1)
-                    ));
+                    )
+                );
             }
 
-            if (isset($obj->code))
+            if (isset($obj->code)) {
                 $lang = LangQuery::create()->findOneByCode(strtolower($obj->code));
-            else // Thelia < 1.5.1
+            } else // Thelia < 1.5.1
+            {
                 $lang = LangQuery::create()->filterByLocale("fr_FR")->findOneByTitle($obj->description);
+            }
 
             if ($lang === null) {
 
@@ -170,14 +176,12 @@ class BaseImport
                         $lang
                             ->setTitle($obj->description)
                             ->setCode($obj->code)
-                            ->setLocale("$obj->code"."_".strtoupper($obj->code));
-                        ;
+                            ->setLocale("$obj->code" . "_" . strtoupper($obj->code));;
                     } else {
                         $lang
                             ->setTitle("Imported Thelia lang $id_lang_thelia_1")
                             ->setCode("")
-                            ->setLocale("")
-                        ;
+                            ->setLocale("");
                     }
 
                     $lang
@@ -196,7 +200,8 @@ class BaseImport
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 lang for Thelia 1 lang id %id",
                         array("%id" => $id_lang_thelia_1)
-                    ));
+                    )
+                );
             }
 
             $this->lang_cache[$id_lang_thelia_1] = $lang;
@@ -217,38 +222,59 @@ class BaseImport
         $title = null;
 
         if (!isset($this->title_cache[$id_title_thelia_1])) {
-
             try {
-                $obj = $this->t1db->query_obj("select * from raisondesc where raison=? limit 1", array($id_title_thelia_1));
+                $obj = $this->t1db->query_obj(
+                    "select * from raisondesc where raison=? limit 1",
+                    array($id_title_thelia_1)
+                );
 
                 if ($obj == false) {
                     throw new ImportException(
                         Translator::getInstance()->trans(
                             "Failed to find a Thelia 1 customer title for id '%id'",
                             array("%id" => $id_title_thelia_1)
-                        ));
+                        )
+                    );
                 }
 
                 // Find the T1 object lang
                 $lang = $this->getT2Lang($obj->lang);
 
                 // Get the T2 title for this lang
-                $title = CustomerTitleI18nQuery::create()->filterByLocale($lang->getLocale())->findOneByShort($obj->court);
+                $title = CustomerTitleI18nQuery::create()->filterByLocale($lang->getLocale())->findOneByShort(
+                    $obj->court
+                );
+
+                if ($title === null) {
+                    throw new ImportException(
+                        Translator::getInstance()->trans(
+                            "Failed to find a Thelia 2 customer title for Thelia 1 short title '%title'",
+                            array("%title" => $obj->court)
+                        )
+                    );
+                }
+
             } catch (\Exception $ex) {
-                if ($id_title_thelia_1 == 1 || $id_title_thelia_1 > 3)
-                    $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('Mr');
-                else if ($id_title_thelia_1 == 2)
+                if ($id_title_thelia_1 == 1 || $id_title_thelia_1 > 3) {
                     $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('Mme');
-                else if ($id_title_thelia_1 == 3)
-                    $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('Mlle');
+                } else {
+                    if ($id_title_thelia_1 == 2) {
+                        $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('Mlle');
+                    } else {
+                        if ($id_title_thelia_1 == 3) {
+                            $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('M.');
+                        }
+                    }
+                }
             }
 
             if ($title === null) {
                 throw new ImportException(
                     Translator::getInstance()->trans(
-                        "Failed to find a Thelia 2 title for Thelia 1 title %id",
+                        "Failed to find a Thelia 2 title for Thelia 1 title ID '%id'",
                         array("%id" => $id_title_thelia_1)
-                    ));
+                    )
+                );
             }
 
             $this->title_cache[$id_title_thelia_1] = $title;
@@ -280,24 +306,32 @@ class BaseImport
 
             if ($obj == false) {
 
-                $obj = $this->t1db->query_obj("select pays, titre from paysdesc where pays=? and lang=1", array($id_country_thelia_1));
+                $obj = $this->t1db->query_obj(
+                    "select pays, titre from paysdesc where pays=? and lang=1",
+                    array($id_country_thelia_1)
+                );
 
                 if ($obj == false) {
                     throw new ImportException(
                         Translator::getInstance()->trans(
                             "Failed to find a Thelia 1 country for id '%id'",
                             array("%id" => $id_country_thelia_1)
-                        ));
+                        )
+                    );
                 }
 
                 $id = $obj->pays;
 
-                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle("$obj->titre%")) {
+                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle(
+                        "$obj->titre%"
+                    )
+                ) {
                     throw new ImportException(
                         Translator::getInstance()->trans(
                             "Failed to find a Thelia 1 country for '%title'",
                             array("%title" => $obj->titre)
-                        ));
+                        )
+                    );
                 }
 
                 $country = CountryQuery::create()->findPk($countryI18n->getId());
@@ -311,7 +345,8 @@ class BaseImport
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 country for Thelia 1 country '%id'",
                         array("%id" => $id)
-                    ));
+                    )
+                );
             }
 
             $this->country_cache[$id_country_thelia_1] = $country;
