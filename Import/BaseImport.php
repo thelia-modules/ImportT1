@@ -36,6 +36,7 @@ use Thelia\Model\CustomerTitle;
 use Thelia\Model\CustomerTitleI18nQuery;
 use Thelia\Model\Lang;
 use Thelia\Model\LangQuery;
+use Thelia\Model\Map\ProductTableMap;
 use Thelia\Model\Map\RewritingUrlTableMap;
 use Thelia\Model\RewritingUrlQuery;
 
@@ -61,6 +62,12 @@ class BaseImport
         $version = $this->t1db->fetch_column($hdl);
 
         $this->thelia_version = intval(substr($version, 0, 3));
+
+        $serviceContainer = Propel::getServiceContainer();
+
+        $serviceContainer->setLogger('defaultLogger', Tlog::getInstance());
+        $con = Propel::getConnection(ProductTableMap::DATABASE_NAME);
+        $con->useDebug(true);
     }
 
     public function getChunkSize()
@@ -357,10 +364,15 @@ class BaseImport
 
     protected function updateRewrittenUrl($t2_object, $locale, $id_lang_t1, $fond_t1, $params_t1)
     {
-        $t1_obj = $this->t1db->query_obj(
-            "select * from reecriture where fond=? and param like? and lang=? and actif=1",
-            array($fond_t1, "&$params_t1", $id_lang_t1)
-        );
+        try {
+            $t1_obj = $this->t1db->query_obj(
+                "select * from reecriture where fond=? and param like? and lang=? and actif=1",
+                array($fond_t1, "&$params_t1", $id_lang_t1)
+            );
+        }
+        catch (\Exception $ex) {
+            $t1_obj = false;
+        }
 
         if ($t1_obj) {
 
