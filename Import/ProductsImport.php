@@ -80,7 +80,7 @@ class ProductsImport extends BaseImport
 
     public function getChunkSize()
     {
-        return 1;
+        return 5;
     }
 
     public function getTotalCount()
@@ -134,7 +134,7 @@ class ProductsImport extends BaseImport
             // Put contents on the root folder in a special folder
             if ($produit->rubrique == 0) {
                 try {
-                    $dossier = $this->cat_corresp->getT2($produit->rubrique);
+                    $this->cat_corresp->getT2($produit->rubrique);
 
                 } catch (\Exception $ex) {
                     // Create the '0' folder
@@ -172,6 +172,16 @@ class ProductsImport extends BaseImport
                 }
 
                 try {
+                    // Check if the product ref is not already defined, and create a new one if it's the case.
+                    $origRef = $destRef = $produit->ref;
+                    $refIdx = 1;
+
+                    while (null !== $dupProd = ProductQuery::create()->findOneByRef($destRef)) {
+                        Tlog::getInstance()->warning("Duplicate product reference: '$destRef', generating alternate reference.");
+
+                        $destRef = sprintf('%s-%d', $origRef, $refIdx++);
+                    }
+
                     $event = new ProductCreateEvent();
 
                     $idx = 0;
@@ -185,8 +195,8 @@ class ProductsImport extends BaseImport
                         );
 
                     // Prices should be without axes
-                    $produit->prix = $produit->prix / (1 + $produit->tva / 100);
-                    $produit->prix2 = $produit->prix2 / (1 + $produit->tva / 100);
+                    $produit->prix = round($produit->prix / (1 + $produit->tva / 100), 2);
+                    $produit->prix2 = round($produit->prix2 / (1 + $produit->tva / 100), 2);
 
                     $product_id = 0;
 
@@ -204,7 +214,7 @@ class ProductsImport extends BaseImport
 
                         if ($idx == 0) {
                             $event
-                                ->setRef($produit->ref)
+                                ->setRef($destRef)
                                 ->setLocale($lang->getLocale())
                                 ->setTitle($objdesc->titre)
                                 ->setDefaultCategory($this->cat_corresp->getT2($produit->rubrique))
@@ -257,7 +267,7 @@ class ProductsImport extends BaseImport
                             );
 
                             $update_pse_event
-                                ->setReference($produit->ref)
+                                ->setReference($destRef)
                                 ->setPrice($produit->prix)
                                 ->setCurrencyId($this->getT2Currency()->getId())
                                 ->setWeight($produit->poids)
@@ -418,7 +428,7 @@ class ProductsImport extends BaseImport
                                         );
 
                                         $pse_update_event
-                                            ->setReference($produit->ref)
+                                            ->setReference($destRef)
                                             ->setPrice($produit->prix + $stock->surplus)
                                             ->setCurrencyId($this->getT2Currency()->getId())
                                             ->setWeight($produit->poids)
@@ -460,7 +470,7 @@ class ProductsImport extends BaseImport
                         $update_event = new ProductUpdateEvent($product_id);
 
                         $update_event
-                            ->setRef($produit->ref)
+                            ->setRef($destRef)
                             ->setLocale($lang->getLocale())
                             ->setTitle($objdesc->titre)
                             ->setChapo($objdesc->chapo)
