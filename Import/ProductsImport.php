@@ -534,6 +534,8 @@ class ProductsImport extends BaseImport
 
         $defaultCountry = CountryQuery::create()->findOneByByDefault(true);
 
+        $first = true;
+
         foreach ($taux_tvas as $taux_tva) {
             $ppe = new PricePercentTaxType();
 
@@ -547,6 +549,7 @@ class ProductsImport extends BaseImport
                 ->setDescription("This tax was imported from Thelia 1 using TVA $taux_tva->tva%")
                 ->setType(get_class($ppe))
                 ->setRequirements($ppe->getRequirements());
+
 
             $this->dispatcher->dispatch(TheliaEvents::TAX_CREATE, $taxEvent);
 
@@ -569,7 +572,8 @@ class ProductsImport extends BaseImport
                 ->setTitle("Tax rule for TVA $taux_tva->tva%")
                 ->setDescription("This tax rule was created from Thelia 1 using TVA $taux_tva->tva%")
                 ->setCountryList(array($defaultCountry->getId()))
-                ->setTaxList(json_encode(array($taxEvent->getTax()->getId())));
+                ->setTaxList(json_encode(array($taxEvent->getTax()->getId())))
+            ;
 
             $this->dispatcher->dispatch(TheliaEvents::TAX_RULE_CREATE, $taxRuleEvent);
 
@@ -589,7 +593,14 @@ class ProductsImport extends BaseImport
                 $this->dispatcher->dispatch(TheliaEvents::TAX_RULE_UPDATE, $taxRuleEvent);
             }
 
+            if ($first) {
+                // Set the first created tax rule as the default tax.
+                $this->dispatcher->dispatch(TheliaEvents::TAX_RULE_SET_DEFAULT, $taxRuleEvent);
+            }
+
             $this->tax_corresp->addEntry(1000 * $taux_tva->tva, $taxRuleEvent->getTaxRule()->getId());
+
+            $first = false;
         }
     }
 
