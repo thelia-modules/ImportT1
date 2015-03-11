@@ -1,16 +1,16 @@
 {extends file="importt1.tpl"}
 
-{block name="step"}{intl l='Welcome !'}{/block}
+{block name="step"}{intl l='importt1.bo.default' l='Welcome !'}{/block}
 
 {block name="inner-content"}
 <div class="row">
-    <div class="col-md-7 title">{intl l="Thelia 1 Database importation"}</div>
+    <div class="col-md-7 title">{intl l='importt1.bo.default' l="Thelia 1 Database importation"}</div>
 </div>
 
 <div class="row">
     <div class="col-md-12">
         <p>
-            {intl l="This module will import a Thelia 1.5.4.x database into the local Thelia 2 database. The following
+            {intl l='importt1.bo.default' l="This module will import a Thelia 1.5.4.x database into the local Thelia 2 database. The following
             information will be imported :
         <ul>
             <li>Customers</li>
@@ -26,7 +26,7 @@
 <div class="row">
     <div class="col-md-12">
         <div class="alert alert-danger">
-            <p>{intl l="Be aware that the related content of your database will be deleted, so be sure to backup it
+            <p>{intl l='importt1.bo.default' l="Be aware that the related content of your database will be deleted, so be sure to backup it
                 before starting the importation process."}</p>
         </div>
     </div>
@@ -35,7 +35,7 @@
 <div class="row">
     <div class="col-md-12">
         <div class="btn-toolbar" role="toolbar">
-            <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-primary pull-right">{intl l="OK,
+            <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-primary pull-right">{intl l='importt1.bo.default' l="OK,
                 let's go !"} <span class="glyphicon glyphicon-forward"></span></a>
         </div>
     </div>

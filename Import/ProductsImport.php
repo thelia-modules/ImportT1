@@ -85,7 +85,7 @@ class ProductsImport extends BaseImport
 
     public function getTotalCount()
     {
-        return $this->t1db->num_rows($this->t1db->query("select id from produit"));
+        return $this->t1db->num_rows($this->t1db->query("select id from produit where rubrique in (16,31,32,33)"));
     }
 
     public function preImport()
@@ -119,11 +119,21 @@ class ProductsImport extends BaseImport
         $hdl = $this->t1db
             ->query(
                 sprintf(
+                    "select * from produit where rubrique in (16,31,32,33) order by rubrique asc limit %d, %d",
+                    intval($startRecord),
+                    $this->getChunkSize()
+                )
+            );
+        /*
+        $hdl = $this->t1db
+            ->query(
+                sprintf(
                     "select * from produit order by rubrique asc limit %d, %d",
                     intval($startRecord),
                     $this->getChunkSize()
                 )
             );
+*/
 
         $image_import = new ProductImageImport($this->dispatcher, $this->t1db);
         $document_import = new ProductDocumentImport($this->dispatcher, $this->t1db);

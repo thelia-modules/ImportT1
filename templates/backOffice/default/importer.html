@@ -12,17 +12,17 @@
         {if $reload}
             {$view_start=$start+1}
             {$end=$start+$chunk_size}
-            <p>{intl l="Please wait, currently processing elements %start to %end" start=$view_start end=$end
+            <p>{intl l='importt1.bo.default' l="Please wait, currently processing elements %start to %end" start=$view_start end=$end
                 object=$object}</p>
 
-            <p>{intl l="%start imported elements on %total total, %remaining to go, %errors error(s) for now (<a href=\"%log_url\" target=\"_log\">view complete log file</a>)." errors=$errors start=$start object=$object
+            <p>{intl l='importt1.bo.default' l="%start imported elements on %total total, %remaining to go, %errors error(s) for now (<a href=\"%log_url\" target=\"_log\">view complete log file</a>)." errors=$errors start=$start object=$object
                 remaining=$remaining total=$total log_url={url path='/admin/module/ImportT1/show-log'}}</p>
 
-            <p>{intl l="This page will reload until all elements have beeen imported, please do not close your browser."}</p>
+            <p>{intl l='importt1.bo.default' l="This page will reload until all elements have beeen imported, please do not close your browser."}</p>
         {else}
-            <p>{intl l="%total elements have been processed." object=$object total=$total}</p>
+            <p>{intl l='importt1.bo.default' l="%total elements have been processed." object=$object total=$total}</p>
             {if $errors > 0}
-                <p>{intl l="Total errors detected: %errors. Please <a href=\"%log_url\" target=\"_log\">check the complete log file</a> for details." object=$object errors=$errors log_url={url path='/admin/module/ImportT1/show-log'}}</p>
+                <p>{intl l='importt1.bo.default' l="Total errors detected: %errors. Please <a href=\"%log_url\" target=\"_log\">check the complete log file</a> for details." object=$object errors=$errors log_url={url path='/admin/module/ImportT1/show-log'}}</p>
             {/if}
         {/if}
     </div>
@@ -31,10 +31,10 @@
 <div class="row">
     <div class="col-md-12">
         <div class="btn-toolbar" role="toolbar">
-            <a href="#" class="btn btn-danger stop"><span class="glyphicon glyphicon-remove"></span> {intl l="Stop"}</a>
+            <a href="#" class="btn btn-danger stop"><span class="glyphicon glyphicon-remove"></span> {intl l='importt1.bo.default' l="Stop"}</a>
             <div class="continue"  style="display:none">
-                <a href="{$startover_route}" class="btn btn-info"><span class="glyphicon glyphicon-refresh"></span> {intl l="Start Over"}</a>
-                <a href="#" class="btn btn-primary continue"><span class="glyphicon glyphicon-forward"></span> {intl l="Resume"}</a>
+                <a href="{$startover_route}" class="btn btn-info"><span class="glyphicon glyphicon-refresh"></span> {intl l='importt1.bo.default' l="Start Over"}</a>
+                <a href="#" class="btn btn-primary continue"><span class="glyphicon glyphicon-forward"></span> {intl l='importt1.bo.default' l="Resume"}</a>
             </div>
         </div>
     </div>

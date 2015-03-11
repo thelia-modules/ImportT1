@@ -73,6 +73,7 @@ class CategoriesImport extends BaseImport
     public function getTotalCount()
     {
         return $this->t1db->num_rows($this->t1db->query("select id from rubrique"));
+        //return $this->t1db->num_rows($this->t1db->query("select id from rubrique"));
     }
 
     public function preImport()
@@ -111,12 +112,22 @@ class CategoriesImport extends BaseImport
                     $this->getChunkSize()
                 )
             );
+        /*
+        $hdl = $this->t1db
+            ->query(
+                sprintf(
+                    "select * from rubrique order by parent asc limit %d, %d",
+                    intval($startRecord),
+                    $this->getChunkSize()
+                )
+            );
+*/
 
         $image_import = new CategoryImageImport($this->dispatcher, $this->t1db);
         $document_import = new CategoryDocumentImport($this->dispatcher, $this->t1db);
 
         while ($hdl && $rubrique = $this->t1db->fetch_object($hdl)) {
-
+echo "r=$rubrique->id";
             $count++;
 
             try {

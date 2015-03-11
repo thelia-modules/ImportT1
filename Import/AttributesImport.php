@@ -23,6 +23,7 @@
 
 namespace ImportT1\Import;
 
+use ImportT1\ImportT1;
 use Thelia\Core\Event\Attribute\AttributeAvCreateEvent;
 use Thelia\Core\Event\Attribute\AttributeAvUpdateEvent;
 use Thelia\Core\Event\Attribute\AttributeCreateEvent;
@@ -218,7 +219,9 @@ class AttributesImport extends BaseImport
                     $idx++;
                 } catch (\Exception $ex) {
                     Tlog::getInstance()->addError(
-                        Translator::getInstance()->trans("Failed to create Attribute Av: %ex", array("%ex" => $ex->getMessage())));
+                        Translator::getInstance()->trans(
+                            "Failed to create Attribute Av: %ex", array("%ex" => $ex->getMessage())), [], ImportT1::DOMAIN
+                    );
 
                     $errors++;
                 }

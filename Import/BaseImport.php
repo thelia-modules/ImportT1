@@ -23,6 +23,7 @@
 
 namespace ImportT1\Import;
 
+use ImportT1\ImportT1;
 use ImportT1\Model\Db;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -114,7 +115,8 @@ class BaseImport
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find the Thelia 1 currency %cur",
-                        array('%cur' => $t1id === false ? 'Default' : "ID=$t1id")
+                        array('%cur' => $t1id === false ? 'Default' : "ID=$t1id"),
+                        ImportT1::DOMAIN
                     )
                 );
 
@@ -126,7 +128,8 @@ class BaseImport
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 lang for Thelia 1 lang code '%code'",
-                        array("%code" => $obj->code)
+                        array("%code" => $obj->code),
+                        ImportT1::DOMAIN
                     )
                 );
             }
@@ -160,7 +163,8 @@ class BaseImport
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 1 lang for id '%id'",
-                        array("%id" => $id_lang_thelia_1)
+                        array("%id" => $id_lang_thelia_1),
+                        ImportT1::DOMAIN
                     )
                 );
             }
@@ -206,7 +210,8 @@ class BaseImport
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 lang for Thelia 1 lang id %id",
-                        array("%id" => $id_lang_thelia_1)
+                        array("%id" => $id_lang_thelia_1),
+                        ImportT1::DOMAIN
                     )
                 );
             }
@@ -239,7 +244,8 @@ class BaseImport
                     throw new ImportException(
                         Translator::getInstance()->trans(
                             "Failed to find a Thelia 1 customer title for id '%id'",
-                            array("%id" => $id_title_thelia_1)
+                            array("%id" => $id_title_thelia_1),
+                            ImportT1::DOMAIN
                         )
                     );
                 }
@@ -256,7 +262,8 @@ class BaseImport
                     throw new ImportException(
                         Translator::getInstance()->trans(
                             "Failed to find a Thelia 2 customer title for Thelia 1 short title '%title'",
-                            array("%title" => $obj->court)
+                            array("%title" => $obj->court),
+                            ImportT1::DOMAIN
                         )
                     );
                 }
@@ -279,7 +286,8 @@ class BaseImport
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 title for Thelia 1 title ID '%id'",
-                        array("%id" => $id_title_thelia_1)
+                        array("%id" => $id_title_thelia_1),
+                        ImportT1::DOMAIN
                     )
                 );
             }
@@ -322,7 +330,8 @@ class BaseImport
                     throw new ImportException(
                         Translator::getInstance()->trans(
                             "Failed to find a Thelia 1 country for id '%id'",
-                            array("%id" => $id_country_thelia_1)
+                            array("%id" => $id_country_thelia_1),
+                            ImportT1::DOMAIN
                         )
                     );
                 }
@@ -336,7 +345,8 @@ class BaseImport
                     throw new ImportException(
                         Translator::getInstance()->trans(
                             "Failed to find a Thelia 1 country for '%title'",
-                            array("%title" => $obj->titre)
+                            array("%title" => $obj->titre),
+                            ImportT1::DOMAIN
                         )
                     );
                 }
@@ -351,7 +361,8 @@ class BaseImport
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find a Thelia 2 country for Thelia 1 country '%id'",
-                        array("%id" => $id)
+                        array("%id" => $id),
+                        ImportT1::DOMAIN
                     )
                 );
             }

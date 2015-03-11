@@ -23,6 +23,7 @@
 
 namespace ImportT1\Import;
 
+use ImportT1\ImportT1;
 use Thelia\Core\Translation\Translator;
 
 /**
@@ -81,7 +82,8 @@ class CorrespondanceTable
             throw new ImportException(
                 Translator::getInstance()->trans(
                     "Failed to find a Thelia 2 %obj for Thelia 1 ID '%id'",
-                    array("%obj" => $obj_name, "%id" => $idt1, "%table" => $this->table_name)
+                    array("%obj" => $obj_name, "%id" => $idt1, "%table" => $this->table_name),
+                    ImportT1::DOMAIN
                 ));
         }
 

@@ -93,6 +93,8 @@ class FoldersImport extends BaseImport
 
         while ($hdl && $dossier = $this->t1db->fetch_object($hdl)) {
 
+            Tlog::getInstance()->info("Processing T1 folder ID $dossier->id, parent: $dossier->parent.");
+
             $count++;
 
             try {
@@ -206,8 +208,18 @@ class FoldersImport extends BaseImport
         foreach ($obj_list as $obj) {
             $t1_parent = $obj->getParent() - 1000000;
 
+            Tlog::getInstance()->addInfo("Searching T1 parent $t1_parent");
+
             if ($t1_parent > 0) {
-                $obj->setParent($this->fld_corresp->getT2($t1_parent))->save();
+                try {
+                    $obj->setParent($this->fld_corresp->getT2($t1_parent))->save();
+                }
+                catch (\Exception $ex) {
+                    // Parent does not exists -> delete the T2 folder.
+                    $obj->delete();
+
+                    Tlog::getInstance()->addWarning("Deleted folder T2 ID=".$obj->getId().", which has an invalid parent T1 ID=$t1_parent.");
+                }
             }
         }
     }

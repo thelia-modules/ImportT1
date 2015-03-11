@@ -29,10 +29,7 @@ use Thelia\Module\BaseModule;
 
 class ImportT1 extends BaseModule
 {
-    public function getCode()
-    {
-        return 'ImportT1';
-    }
+    const DOMAIN = 'ImportT1';
 
     public function postActivation(ConnectionInterface $con = null)
     {

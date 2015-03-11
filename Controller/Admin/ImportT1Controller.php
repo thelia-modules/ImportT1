@@ -9,6 +9,7 @@ use ImportT1\Import\FeaturesImport;
 use ImportT1\Import\FoldersImport;
 use ImportT1\Import\OrdersImport;
 use ImportT1\Import\ProductsImport;
+use ImportT1\ImportT1;
 use ImportT1\Model\DatabaseInfo;
 use ImportT1\Model\Db;
 use Propel\Runtime\Propel;
@@ -79,7 +80,7 @@ class ImportT1Controller extends BaseAdminController
             ->setClientDirectory(trim($this->getRequest()->get('client_directory')));
 
         if (!$dbinfo->isValid()) {
-            $error_message = Translator::getInstance()->trans("Please enter all required information.");
+            $error_message = Translator::getInstance()->trans("Please enter all required information.", [], ImportT1::DOMAIN);
         } else {
             $this->getDb()->setDbInfo($dbinfo);
 
@@ -100,43 +101,61 @@ class ImportT1Controller extends BaseAdminController
                     if (intval(substr($version, 0, 3)) < self::MIN_VERSION) {
                         $error_message = $this->getTranslator()->trans(
                             "A Thelia %version database was found. Unfortunately, only Thelia 1.4.2 or newer databases may be imported. Please upgrade this Thelia 1 installation up to the latest available Thelia 1 version.",
-                            array("%version" => rtrim(preg_replace("/(.)/", "$1.", $version), "."))
+                            array("%version" => rtrim(preg_replace("/(.)/", "$1.", $version), ".")),
+                            ImportT1::DOMAIN
                         );
                     } else {
 
                         $dir = $dbinfo->getClientDirectory();
 
                         if (!empty($dir)) {
-
-                            // Check the "client" path
-                            if (!is_dir($dbinfo->getClientDirectory())) {
-                                $error_message =
-                                    $this->getTranslator()->trans(
-                                        "The directory %dir was not found. Please check your input and try again.",
-                                        array("%dir" => $dbinfo->getClientDirectory())
-                                    );
-                            } else {
-                                $photos_dir = sprintf("%s%sgfx%sphotos", $dir, DS, DS);
-
-                                if (!is_dir($photos_dir)) {
+                            try {
+                                // Check the "client" path
+                                if (!is_dir($dbinfo->getClientDirectory())) {
                                     $error_message =
                                         $this->getTranslator()->trans(
-                                            "No Thelia 1 image directory can be found in %dir directory.",
-                                            array("%dir" => $dbinfo->getClientDirectory())
+                                            "The directory %dir was not found. Please check your input and try again.",
+                                            array("%dir" => $dbinfo->getClientDirectory()),
+                                            ImportT1::DOMAIN
                                         );
+                                } else {
+                                    $photos_dir = sprintf("%s%sgfx%sphotos", $dir, DS, DS);
+
+                                    if (!is_dir($photos_dir)) {
+                                        $error_message =
+                                            $this->getTranslator()->trans(
+                                                "No Thelia 1 image directory can be found in %dir directory.",
+                                                array("%dir" => $dbinfo->getClientDirectory()),
+                                                ImportT1::DOMAIN
+                                            );
+                                    }
                                 }
+                            }
+                            catch (\Exception $ex) {
+                                $error_message = $this->getTranslator()->trans(
+                                    "Failed to access to %dir directory. (%ex)",
+                                    [
+                                        "%dir" => $dbinfo->getClientDirectory(),
+                                        '%ex' => $ex->getMessage()
+                                    ],
+                                    ImportT1::DOMAIN
+                                );
                             }
                         }
                     }
                 } catch (\Exception $ex) {
                     $error_message = $this->getTranslator()->trans(
-                        "No Thelia 1 database was found in this database. Please check your input and try again."
+                        "No Thelia 1 database was found in this database. Please check your input and try again. (%ex)",
+                        [ '%ex' => $ex->getMessage() ],
+                        ImportT1::DOMAIN
                     );
                 }
 
             } catch (\Exception $ex) {
                 $error_message = $this->getTranslator()->trans(
-                    "Failed to connect to database using the parameters below. Please check your input and try again"
+                    "Failed to connect to database using the parameters below. Please check your input and try again. (%ex)",
+                    [ '%ex' => $ex->getMessage() ],
+                    ImportT1::DOMAIN
                 );
             }
         }
@@ -144,7 +163,7 @@ class ImportT1Controller extends BaseAdminController
         if ($error_message !== false) {
             // Check that we have at least one payment and one delivery module
             if (null === ModuleQuery::create()->findOneByType(BaseModule::DELIVERY_MODULE_TYPE)) {
-                $error_message = $this->getTranslator()->trans("No active delivery module was found. Please install and activate at least one delivery module.");
+                $error_message = $this->getTranslator()->trans("No active delivery module was found. Please install and activate at least one delivery module.", [], ImportT1::DOMAIN);
             }
         }
 
@@ -152,18 +171,16 @@ class ImportT1Controller extends BaseAdminController
             // Check that we have at least one paypent and one delivery module
             // Find the first availables delivery and payment modules, that's the best we can do.
             if (null === ModuleQuery::create()->findOneByType(BaseModule::PAYMENT_MODULE_TYPE)) {
-                $error_message = $this->getTranslator()->trans("No active paiement module was found. Please install and activate at least one payment module.");
+                $error_message = $this->getTranslator()->trans("No active paiement module was found. Please install and activate at least one payment module.", [], ImportT1::DOMAIN);
             }
         }
-
-        $paymentModule  = ModuleQuery::create()->findOneByType(BaseModule::PAYMENT_MODULE_TYPE);
 
         if ($error_message !== false) {
             // Render the edition template.
             return $this->selectDbAction($error_message);
         }
 
-        return $this->redirectToRoute("importT1.review");
+        return $this->generateRedirectFromRoute("importT1.review");
     }
 
     /**

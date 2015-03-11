@@ -7,7 +7,7 @@
     <descriptive locale="fr_FR">
         <title>Importation d'une base de données Thelia 1.5.4.x</title>
     </descriptive>
-    <version>0.0.1</version>
+    <version>0.8.0</version>
     <author>
         <name>Franck Allimant</name>
         <company>CQFDev</company>
@@ -15,6 +15,6 @@
         <website>www.cqfdev.fr</website>
     </author>
     <type>classic</type>
-    <thelia>2.0.0</thelia>
-    <stability>alpha</stability>
+    <thelia>2.0.4</thelia>
+    <stability>beta</stability>
 </module>
