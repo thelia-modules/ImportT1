@@ -2,7 +2,7 @@
 <module>
     <fullnamespace>ImportT1\ImportT1</fullnamespace>
     <descriptive locale="en_US">
-        <title>Thelia 1.5.3.x database importation</title>
+        <title>Thelia 1.5.4.x database importation</title>
     </descriptive>
     <descriptive locale="fr_FR">
         <title>Importation d'une base de données Thelia 1.5.4.x</title>
