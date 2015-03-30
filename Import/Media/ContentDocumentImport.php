@@ -37,7 +37,7 @@ class ContentDocumentImport extends AbstractMediaImport
 
     protected function getMediaList($t1_object_id)
     {
-        return $this->t1db->query_list("select * from document where contenu = ?", array($t1_object_id));
+        return $this->t1db->query_list("select * from document where contenu = ? order by classement asc", array($t1_object_id));
     }
 
     protected function getMediaDesc($t1_object_id)

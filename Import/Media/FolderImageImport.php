@@ -37,7 +37,7 @@ class FolderImageImport extends AbstractMediaImport
 
     protected function getMediaList($t1_object_id)
     {
-        return $this->t1db->query_list("select * from image where dossier = ?", array($t1_object_id));
+        return $this->t1db->query_list("select * from image where dossier = ? order by classement asc", array($t1_object_id));
     }
 
     protected function getMediaDesc($t1_object_id)
