@@ -34,7 +34,7 @@ class ImportT1Controller extends BaseAdminController
     public function __construct()
     {
 
-        $this->log_file = __DIR__ . DS . '..' . DS . '..' . DS . 'log' . DS . 'import-log.txt';
+        $this->log_file = THELIA_LOG_DIR . DS . 'import-log.txt';
 
         // Set the current router ID, to use our parent's route methods on our routes
         $this->setCurrentRouter("router.ImportT1");
