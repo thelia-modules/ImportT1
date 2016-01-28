@@ -12,7 +12,7 @@ This module will import a Thelia 1.5.x database into the local Thelia 2 database
 The import process needs an access to your Thelia 1 database. This could be the real (live) database, but is is safer to make a copy of this database (e.g. an export / import), and start the import on this copy.
 
 If you want to import images and documents, you'll have to provide the absolute path to the 'client' directory of your Thelia 1 installation.
-As the required folders are `client/gfx`, `client/document` and `client/commandes`, this is the only ones you need to copy on the local machine if your Thelia 1 installation is located 
+As the required folders are `client/gfx`, `client/document` and `client/commande`, this is the only ones you need to copy on the local machine if your Thelia 1 installation is located 
 somewhere else.
 
 It is **recommended** to start the import process on a fresh Thelia 2 database, to prevent any inconsistencies
