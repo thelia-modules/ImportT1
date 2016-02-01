@@ -399,6 +399,7 @@ class BaseImport
                 RewritingUrlQuery::create()
                     ->filterByViewLocale($locale)
                     ->findByViewId($t2_object->getId())
+                    ->filterByView($t2_object->getRewrittenUrlViewName())
                     ->delete();
 
                 RewritingUrlQuery::create()
