@@ -127,7 +127,7 @@ class CategoriesImport extends BaseImport
         $document_import = new CategoryDocumentImport($this->dispatcher, $this->t1db);
 
         while ($hdl && $rubrique = $this->t1db->fetch_object($hdl)) {
-echo "r=$rubrique->id";
+            // echo "r=$rubrique->id";
             $count++;
 
             try {
