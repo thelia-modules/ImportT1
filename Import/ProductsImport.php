@@ -402,7 +402,7 @@ class ProductsImport extends BaseImport
                                     }
 
                                     $stock = $this->t1db->query_obj(
-                                        "select * from stock where declidisp=?and produit=?",
+                                        "select * from stock where declidisp=? and produit=?",
                                         array($declidisp->id, $produit->id)
                                     );
 
