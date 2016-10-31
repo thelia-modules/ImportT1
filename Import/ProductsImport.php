@@ -441,6 +441,10 @@ class ProductsImport extends BaseImport
                                             ->setTaxRuleId($this->tax_corresp->getT2(1000 * $produit->tva))
                                             ->setFromDefaultCurrency(0);
 
+                                        if ($is_text) {
+                                            $feature_value_event->setLocale($lang->getLocale());
+                                        }
+
                                         $this->dispatcher->dispatch(
                                             TheliaEvents::PRODUCT_UPDATE_PRODUCT_SALE_ELEMENT,
                                             $pse_update_event
