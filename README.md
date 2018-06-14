@@ -17,6 +17,10 @@ somewhere else.
 
 It is **recommended** to start the import process on a fresh Thelia 2 database, to prevent any inconsistencies
 
+Once you've completed a full import, you can choose to only customers and orders. This way, you can prepare
+your Thelia 2 shop while keeping the Thelia 1 shop opened, and get the last customers and orders when the
+shop is switched to Thelia 2.
+
 ## How to install
 
 This module must be into your ```modules/``` directory (thelia/local/modules/).
