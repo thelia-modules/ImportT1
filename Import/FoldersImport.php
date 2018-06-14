@@ -55,11 +55,18 @@ class FoldersImport extends BaseImport
         return 10;
     }
 
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     public function getTotalCount()
     {
         return $this->t1db->num_rows($this->t1db->query("select id from dossier"));
     }
 
+    /**
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     public function preImport()
     {
         // Delete table before proceeding
@@ -73,6 +80,11 @@ class FoldersImport extends BaseImport
         $this->fld_corresp->reset();
     }
 
+    /**
+     * @param int $startRecord
+     * @return ImportChunkResult
+     * @throws \Exception
+     */
     public function import($startRecord = 0)
     {
         $count = 0;
@@ -184,7 +196,9 @@ class FoldersImport extends BaseImport
                         $lang->getLocale(),
                         $objdesc->lang,
                         "dossier",
-                        "%id_dossier=$dossier->id"
+                        "%id_dossier=$dossier->id",
+                        $dossier,
+                        $objdesc
                     );
 
                     $idx++;

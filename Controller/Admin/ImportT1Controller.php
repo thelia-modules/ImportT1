@@ -2,6 +2,7 @@
 namespace ImportT1\Controller\Admin;
 
 use ImportT1\Import\AttributesImport;
+use ImportT1\Import\BaseImport;
 use ImportT1\Import\CategoriesImport;
 use ImportT1\Import\ContentsImport;
 use ImportT1\Import\CustomersImport;
@@ -105,7 +106,6 @@ class ImportT1Controller extends BaseAdminController
                             ImportT1::DOMAIN
                         );
                     } else {
-
                         $dir = $dbinfo->getClientDirectory();
 
                         if (!empty($dir)) {
@@ -130,8 +130,7 @@ class ImportT1Controller extends BaseAdminController
                                             );
                                     }
                                 }
-                            }
-                            catch (\Exception $ex) {
+                            } catch (\Exception $ex) {
                                 $error_message = $this->getTranslator()->trans(
                                     "Failed to access to %dir directory. (%ex)",
                                     [
@@ -222,6 +221,13 @@ class ImportT1Controller extends BaseAdminController
         $hdl = $db->query("select valeur from variable where nom = 'nomsite'");
         $nomsite = $db->fetch_column($hdl);
 
+        try {
+            $db->query("select * from t1_t2_product limit 1");
+            $alreadyDone = true;
+        } catch (\Exception $ex) {
+            $alreadyDone = false;
+        }
+
         return $this->render(
             'review',
             array(
@@ -229,7 +235,8 @@ class ImportT1Controller extends BaseAdminController
                 'dbname' => $dbinfo->getDbname(),
                 'version' => rtrim(preg_replace("/(.)/", "$1.", $version), "."),
                 'shop_name' => $nomsite,
-                'client_directory' => $dbinfo->getClientDirectory()
+                'client_directory' => $dbinfo->getClientDirectory(),
+                'already_done' => $alreadyDone
             )
         );
     }
@@ -243,7 +250,17 @@ class ImportT1Controller extends BaseAdminController
         return $resp;
     }
 
-    protected function genericImport($importer, $title, $object, $next_route, $startover_route, $start = 0, $total_errors= 0)
+    /**
+     * @param BaseImport $importer
+     * @param $title
+     * @param $object
+     * @param $next_route
+     * @param $startover_route
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     */
+    protected function genericImport($importer, $title, $object, $next_route, $startover_route, $start = 0, $total_errors = 0)
     {
         try {
             if ($start == 0) {
@@ -281,38 +298,36 @@ class ImportT1Controller extends BaseAdminController
                 )
             );
         } catch (\Exception $ex) {
-            throw $ex;
-            /*
             Tlog::getInstance()->addError(sprintf("Failed in %s importation, error: ", $object), $ex);
 
-            $this->render('import-error');
-            */
+            return $this->render('import-error');
         }
     }
 
-    public function importCustomersAction($start = 0, $total_errors= 0)
+    public function startupAction()
     {
         // This is the first import: let's clear the log file
-        if ($start == 0) {
-            if ($fh = @fopen($this->log_file, 'w')) {
-                fclose($fh);
-            }
-
-            Tlog::getInstance()->info("Started Thelia DB Import");
+        if ($fh = @fopen($this->log_file, 'w')) {
+            fclose($fh);
         }
 
-        return $this->genericImport(
-            new CustomersImport($this->getDispatcher(), $this->getDb()),
-            $this->getTranslator()->trans("Customer importation"),
-            'customer',
+        Tlog::getInstance()->info("Started Thelia DB Import");
+
+        // Start the first import
+        return $this->generateRedirectFromRoute(
             'importT1.folder',
-            'importT1.customer',
-            $start,
-            $total_errors
+            [],
+            ['start' => 0, 'total_errors' => 0]
         );
     }
 
-    public function importFoldersAction($start = 0, $total_errors= 0)
+    /**
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     * @throws \Exception
+     */
+    public function importFoldersAction($start = 0, $total_errors = 0)
     {
         return $this->genericImport(
             new FoldersImport($this->getDispatcher(), $this->getDb()),
@@ -325,7 +340,13 @@ class ImportT1Controller extends BaseAdminController
         );
     }
 
-    public function importContentsAction($start = 0, $total_errors= 0)
+    /**
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     * @throws \Exception
+     */
+    public function importContentsAction($start = 0, $total_errors = 0)
     {
         return $this->genericImport(
             new ContentsImport($this->getDispatcher(), $this->getDb()),
@@ -338,7 +359,13 @@ class ImportT1Controller extends BaseAdminController
         );
     }
 
-    public function importFeaturesAction($start = 0, $total_errors= 0)
+    /**
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     * @throws \Exception
+     */
+    public function importFeaturesAction($start = 0, $total_errors = 0)
     {
         return $this->genericImport(
             new FeaturesImport($this->getDispatcher(), $this->getDb()),
@@ -349,9 +376,15 @@ class ImportT1Controller extends BaseAdminController
             $start,
             $total_errors
         );
-     }
+    }
 
-    public function importAttributesAction($start = 0, $total_errors= 0)
+    /**
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     * @throws \Exception
+     */
+    public function importAttributesAction($start = 0, $total_errors = 0)
     {
         return $this->genericImport(
             new AttributesImport($this->getDispatcher(), $this->getDb()),
@@ -364,7 +397,13 @@ class ImportT1Controller extends BaseAdminController
         );
     }
 
-    public function importCategoriesAction($start = 0, $total_errors= 0)
+    /**
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     * @throws \Exception
+     */
+    public function importCategoriesAction($start = 0, $total_errors = 0)
     {
         return $this->genericImport(
             new CategoriesImport($this->getDispatcher(), $this->getDb()),
@@ -377,20 +416,58 @@ class ImportT1Controller extends BaseAdminController
         );
     }
 
-    public function importProductsAction($start = 0, $total_errors= 0)
+    /**
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     * @throws \Exception
+     */
+    public function importProductsAction($start = 0, $total_errors = 0)
     {
         return $this->genericImport(
             new ProductsImport($this->getDispatcher(), $this->getDb()),
             $this->getTranslator()->trans("Products importation"),
             'product',
-            'importT1.order',
+            'importT1.customer',
             'importT1.product',
             $start,
             $total_errors
         );
     }
 
-    public function importOrdersAction($start = 0, $total_errors= 0)
+    /**
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     * @throws \Exception
+     */
+    public function importCustomersAction($start = 0, $total_errors = 0)
+    {
+        if ($this->getRequest()->get('clearLog', false)) {
+            // This is the first import: let's clear the log file
+            if ($fh = @fopen($this->log_file, 'w')) {
+                fclose($fh);
+            }
+        }
+
+        return $this->genericImport(
+            new CustomersImport($this->getDispatcher(), $this->getDb()),
+            $this->getTranslator()->trans("Customer importation"),
+            'customer',
+            'importT1.order',
+            'importT1.customer',
+            $start,
+            $total_errors
+        );
+    }
+
+    /**
+     * @param int $start
+     * @param int $total_errors
+     * @return Response
+     * @throws \Exception
+     */
+    public function importOrdersAction($start = 0, $total_errors = 0)
     {
         return $this->genericImport(
             new OrdersImport($this->getDispatcher(), $this->getDb()),
@@ -403,7 +480,7 @@ class ImportT1Controller extends BaseAdminController
         );
     }
 
-    public function importDoneAction($total_errors= 0)
+    public function importDoneAction($total_errors = 0)
     {
         $errors = "";
 
@@ -418,15 +495,19 @@ class ImportT1Controller extends BaseAdminController
             @fclose($fh);
         }
 
-        Tlog::getInstance()->info($this->getTranslator()->trans(
-            "Thelia DB Import terminated with %err error(s)", array("%err", $total_errors)));
+        Tlog::getInstance()->info(
+            $this->getTranslator()->trans(
+                "Thelia DB Import terminated with %err error(s)",
+                array("%err", $total_errors)
+            )
+        );
 
-         return $this->render(
+        return $this->render(
             'done',
             array(
                 'total_errors' => $total_errors,
                 'errors' => nl2br($errors)
-             )
+            )
         );
     }
 
@@ -445,8 +526,9 @@ class ImportT1Controller extends BaseAdminController
             @fclose($fh);
         }
 
-        if ($reverse)
+        if ($reverse) {
             $errors = array_reverse($errors);
+        }
 
         return nl2br(implode('<br />', $errors));
     }

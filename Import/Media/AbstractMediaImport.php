@@ -36,9 +36,19 @@ abstract class AbstractMediaImport extends BaseImport
 
     abstract protected function getMediaDesc($t1_object_id);
 
+    public function getTotalCount()
+    {
+        // Not used.
+        return false;
+    }
+    public function import($startRecord = 0)
+    {
+        // Not used.
+        return false;
+    }
+
     public function doImportMedia($t1_object_id, $t2_object_id, $client_path, $local_path)
     {
-
         if ($this->t1db->hasClientPath()) {
             $fs = new Filesystem();
 

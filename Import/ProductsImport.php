@@ -57,6 +57,12 @@ class ProductsImport extends BaseImport
     private $product_corresp;
     private $tpl_corresp;
     private $tax_corresp;
+    private $cat_corresp;
+    private $feat_corresp;
+    private $feat_av_corresp;
+    private $attr_corresp;
+    private $attr_av_corresp;
+    private $content_corresp;
 
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
@@ -83,11 +89,18 @@ class ProductsImport extends BaseImport
         return 5;
     }
 
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     public function getTotalCount()
     {
         return $this->t1db->num_rows($this->t1db->query("select id from produit"));
     }
 
+    /**
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     public function preImport()
     {
         // Delete table before proceeding
@@ -110,6 +123,12 @@ class ProductsImport extends BaseImport
         $this->importTaxes();
     }
 
+    /**
+     * @param int $startRecord
+     * @return ImportChunkResult|void
+     * @throws ImportException
+     * @throws \Exception
+     */
     public function import($startRecord = 0)
     {
         $count = 0;
@@ -142,6 +161,7 @@ class ProductsImport extends BaseImport
 
                     $root
                         ->setParent(0)
+                        ->setVisible(true)
                         ->setLocale('fr_FR')
                         ->setTitle("Rubrique racine Thelia 1")
                         ->setLocale('en_US')
@@ -149,7 +169,6 @@ class ProductsImport extends BaseImport
                         ->setDescription("")
                         ->setChapo("")
                         ->setPostscriptum("")
-                        ->setVisible(true)
                         ->save();
 
                     Tlog::getInstance()->warning("Created pseudo-root category to store products at root level");
@@ -195,8 +214,8 @@ class ProductsImport extends BaseImport
                         );
 
                     // Prices should be without axes
-                    $produit->prix = round($produit->prix / (1 + $produit->tva / 100), 2);
-                    $produit->prix2 = round($produit->prix2 / (1 + $produit->tva / 100), 2);
+                    $produit->prix = $produit->prix / (1 + $produit->tva / 100);
+                    $produit->prix2 = $produit->prix2 / (1 + $produit->tva / 100);
 
                     $product_id = 0;
 
@@ -328,7 +347,6 @@ class ProductsImport extends BaseImport
 
                             // Update features (= caracteristiques) values
                             // -------------------------------------------
-
                             $caracvals = $this->t1db->query_list(
                                 "select * from caracval where produit=?",
                                 array($produit->id)
@@ -346,12 +364,17 @@ class ProductsImport extends BaseImport
                                         continue;
                                     }
 
+
                                     $feature_value_event = new FeatureProductUpdateEvent(
                                         $product_id,
                                         $this->feat_corresp->getT2($caracval->caracteristique),
                                         $feature_value,
                                         $is_text
                                     );
+
+                                    if ($is_text) {
+                                        $feature_value_event->setLocale($lang->getLocale());
+                                    }
 
                                     $this->dispatcher->dispatch(
                                         TheliaEvents::PRODUCT_FEATURE_UPDATE_VALUE,
@@ -405,8 +428,7 @@ class ProductsImport extends BaseImport
                                         "select * from stock where declidisp=? and produit=?",
                                         array($declidisp->id, $produit->id)
                                     );
-
-                                    if ($stock == false) {
+                                    if ($stock === false) {
                                         continue;
                                     }
 
@@ -440,10 +462,6 @@ class ProductsImport extends BaseImport
                                             ->setEanCode('')
                                             ->setTaxRuleId($this->tax_corresp->getT2(1000 * $produit->tva))
                                             ->setFromDefaultCurrency(0);
-
-                                        if ($is_text) {
-                                            $feature_value_event->setLocale($lang->getLocale());
-                                        }
 
                                         $this->dispatcher->dispatch(
                                             TheliaEvents::PRODUCT_UPDATE_PRODUCT_SALE_ELEMENT,
@@ -491,7 +509,9 @@ class ProductsImport extends BaseImport
                             $lang->getLocale(),
                             $objdesc->lang,
                             "produit",
-                            "%id_produit=$produit->id&id_rubrique=$produit->rubrique%"
+                            "%id_produit=$produit->id&id_rubrique=$produit->rubrique%",
+                            $produit,
+                            $objdesc
                         );
 
                         $idx++;
@@ -512,6 +532,46 @@ class ProductsImport extends BaseImport
 
         return new ImportChunkResult($count, $errors);
     }
+
+    protected function makeT1RewrittenUrl($t1Object, $t1descObj, $idLangT1)
+    {
+        // T1 URL form :
+        // boutique-rangements-pour-argenterie_125_coffrets-et-ecrins-pour-couverts_menageres-table-completes_ecrin-menagere-49-places-table__e02.html
+        //
+        // TitreRubrique1_IdRubriqueProd_TitreRubrique2_TitreRubrique3_ ... TitreRubriqueProd_ProductTitle__ProductRef.html
+        $idRubrique = $origRubrique = $t1Object->rubrique;
+
+        $rubriques = [];
+
+        $idx = 0;
+
+        while ($idRubrique > 0 && $idx++ < 20) {
+            $rub = $this->t1db->query_obj("select rd.titre, r.id, r.parent from rubrique r LEFT JOIN rubriquedesc rd on rd.rubrique = r.id where rd.rubrique=? and lang=?",
+                [ $idRubrique,  $idLangT1 ]
+            );
+
+            $rubriques[] = $rub->titre;
+
+            $idRubrique = $rub->parent;
+        }
+
+        $rubriques = array_reverse($rubriques);
+
+        $url = array_shift($rubriques) . '_' . $origRubrique . '_';
+
+        foreach ($rubriques as $rubrique) {
+            $url .= $rubrique . '_';
+        }
+
+        $url .= $t1descObj->titre . '__' . $t1Object->ref;
+
+        $url = $this->eregurl($url);
+
+        Tlog::getInstance()->addInfo("Thelia 1 product URL generated: $url");
+
+        return $url;
+    }
+
 
     public function importTaxes()
     {

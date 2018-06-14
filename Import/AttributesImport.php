@@ -37,8 +37,10 @@ use Thelia\Model\AttributeQuery;
 
 class AttributesImport extends BaseImport
 {
-
+    /** @var CorrespondanceTable */
     private $attr_corresp;
+
+    /** @var CorrespondanceTable */
     private $attr_av_corresp;
 
     public function getTotalCount()
@@ -51,9 +53,11 @@ class AttributesImport extends BaseImport
         return $this->getTotalCount();
     }
 
+    /**
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     public function preImport()
     {
-
         AttributeQuery::create()->deleteAll();
         AttributeAvQuery::create()->deleteAll();
 
@@ -192,13 +196,15 @@ class AttributesImport extends BaseImport
 
                         $this->dispatcher->dispatch(TheliaEvents::ATTRIBUTE_AV_CREATE, $event);
 
-                        // Updater position
-                        $update_position_event = new UpdatePositionEvent(
-                            $event->getAttributeAv()->getId(),
-                            UpdatePositionEvent::POSITION_ABSOLUTE,
-                            $desc->classement);
+                        if (property_exists($desc, 'classement')) {
+                            // Updater position
+                            $update_position_event = new UpdatePositionEvent(
+                                $event->getAttributeAv()->getId(),
+                                UpdatePositionEvent::POSITION_ABSOLUTE,
+                                $desc->classement);
 
-                        $this->dispatcher->dispatch(TheliaEvents::ATTRIBUTE_AV_UPDATE_POSITION, $update_position_event);
+                            $this->dispatcher->dispatch(TheliaEvents::ATTRIBUTE_AV_UPDATE_POSITION, $update_position_event);
+                        }
 
                         $this->attr_av_corresp->addEntry($declidisp->id, $event->getAttributeAv()->getId());
                     }

@@ -6,7 +6,7 @@
     {/stylesheets}
 {/block}
 
-{block name="page-title"}{intl l='importt1.bo.default' l='Thelia 1 DB Import'}{/block}
+{block name="page-title"}{intl d='importt1.bo.default' l='Thelia 1 DB Import'}{/block}
 
 {block name="check-resource"}module.ImportT1{/block}
 {block name="check-access"}update{/block}
@@ -16,9 +16,9 @@
         <div id="wrapper" class="container">
             <div class="clearfix">
                 <ul class="breadcrumb pull-left">
-                    <li><a href="{url path='/admin/home'}">{intl l='importt1.bo.default' l="Home"}</a></li>
-                    <li><a href="{url path='/admin/modules'}">{intl l='importt1.bo.default' l="Modules"}</a></li>
-                    <li><a href="{url path='/admin/module/ImportT1'}">{intl l='importt1.bo.default' l="Thelia 1 DB Import"}</a></li>
+                    <li><a href="{url path='/admin/home'}">{intl d='importt1.bo.default' l="Home"}</a></li>
+                    <li><a href="{url path='/admin/modules'}">{intl d='importt1.bo.default' l="Modules"}</a></li>
+                    <li><a href="{url path='/admin/module/ImportT1'}">{intl d='importt1.bo.default' l="Thelia 1 DB Import"}</a></li>
                     <li>{block name="step"}{/block}</li>
                 </ul>
             </div>

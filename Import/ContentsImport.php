@@ -26,6 +26,9 @@ namespace ImportT1\Import;
 use ImportT1\Import\Media\ContentDocumentImport;
 use ImportT1\Import\Media\ContentImageImport;
 use ImportT1\Model\Db;
+use Propel\Runtime\ActiveQuery\Criteria;
+use Propel\Runtime\Connection\PdoConnection;
+use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thelia\Core\Event\Content\ContentCreateEvent;
 use Thelia\Core\Event\Content\ContentUpdateEvent;
@@ -36,10 +39,13 @@ use Thelia\Model\ContentDocumentQuery;
 use Thelia\Model\ContentImageQuery;
 use Thelia\Model\ContentQuery;
 use Thelia\Model\Folder;
+use Thelia\Model\Map\RewritingUrlTableMap;
+use Thelia\Model\RewritingUrlQuery;
 
 class ContentsImport extends BaseImport
 {
     private $content_corresp;
+    private $fld_corresp;
 
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
@@ -56,11 +62,18 @@ class ContentsImport extends BaseImport
         return 10;
     }
 
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     public function getTotalCount()
     {
         return $this->t1db->num_rows($this->t1db->query("select id from contenu"));
     }
 
+    /**
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     public function preImport()
     {
         // Delete table before proceeding
@@ -71,8 +84,24 @@ class ContentsImport extends BaseImport
 
         // Create T1 <-> T2 IDs correspondance tables
         $this->content_corresp->reset();
+
+        // Also empty url rewriting table
+        /** @var PdoConnection $con */
+        $con = Propel::getConnection(RewritingUrlTableMap::DATABASE_NAME);
+
+        $con->exec('SET FOREIGN_KEY_CHECKS=0');
+        RewritingUrlQuery::create()
+            ->filterByView([ 'content', 'folder' ], Criteria::IN)
+            ->delete();
+        $con->exec('SET FOREIGN_KEY_CHECKS=1');
     }
 
+    /**
+     * @param int $startRecord
+     * @return ImportChunkResult
+     * @throws ImportException
+     * @throws \Exception
+     */
     public function import($startRecord = 0)
     {
         $count = 0;
@@ -98,7 +127,7 @@ class ContentsImport extends BaseImport
             // Put contents on the root folder in a special folder
             if ($contenu->dossier == 0) {
                 try {
-                    $dossier = $this->fld_corresp->getT2($contenu->dossier);
+                    $this->fld_corresp->getT2($contenu->dossier);
 
                 } catch (\Exception $ex) {
                     // Create the '0' folder
@@ -106,6 +135,7 @@ class ContentsImport extends BaseImport
 
                     $root
                         ->setParent(0)
+                        ->setVisible(true)
                         ->setLocale('fr_FR')
                         ->setTitle("Dossier racine Thelia 1")
                         ->setLocale('en_US')
@@ -113,7 +143,6 @@ class ContentsImport extends BaseImport
                         ->setDescription("")
                         ->setChapo("")
                         ->setPostscriptum("")
-                        ->setVisible(true)
                     ->save();
 
                     Tlog::getInstance()->warning("Created pseudo-root folder to store contents at root level");
@@ -213,7 +242,9 @@ class ContentsImport extends BaseImport
                             $lang->getLocale(),
                             $objdesc->lang,
                             "contenu",
-                            "%id_contenu=$contenu->id&id_dossier=$contenu->dossier%"
+                            "%id_contenu=$contenu->id&id_dossier=$contenu->dossier%",
+                            $contenu,
+                            $objdesc
                         );
 
                         $idx++;

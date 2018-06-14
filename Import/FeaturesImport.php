@@ -31,12 +31,16 @@ use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\UpdatePositionEvent;
 use Thelia\Log\Tlog;
 use Thelia\Model\FeatureAvQuery;
+use Thelia\Model\FeatureProduct;
+use Thelia\Model\FeatureProductQuery;
 use Thelia\Model\FeatureQuery;
 
 class FeaturesImport extends BaseImport
 {
-
+    /** @var CorrespondanceTable */
     private $feat_corresp;
+
+    /** @var CorrespondanceTable */
     private $feat_av_corresp;
 
     public function getTotalCount()
@@ -49,11 +53,14 @@ class FeaturesImport extends BaseImport
         return $this->getTotalCount();
     }
 
+    /**
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     public function preImport()
     {
-
         FeatureQuery::create()->deleteAll();
         FeatureAvQuery::create()->deleteAll();
+        FeatureProductQuery::create()->deleteAll();
 
         // Create T1 <-> T2 IDs correspondance tables
         $this->feat_corresp = new CorrespondanceTable(CorrespondanceTable::FEATURES, $this->t1db);
@@ -63,6 +70,10 @@ class FeaturesImport extends BaseImport
         $this->feat_av_corresp->reset();
     }
 
+    /**
+     * @param int $startRecord
+     * @return ImportChunkResult
+     */
     public function import($startRecord = 0)
     {
 
@@ -81,9 +92,12 @@ class FeaturesImport extends BaseImport
         return $ret;
     }
 
+    /**
+     * @return ImportChunkResult
+     * @throws \Exception
+     */
     public function importFeatures()
     {
-
         $count = $errors = 0;
 
         $hdl = $this->t1db->query("select * from caracteristique order by classement");
@@ -190,13 +204,15 @@ class FeaturesImport extends BaseImport
 
                         $this->dispatcher->dispatch(TheliaEvents::FEATURE_AV_CREATE, $event);
 
-                        // Updater position
-                        $update_position_event = new UpdatePositionEvent(
-                            $event->getFeatureAv()->getId(),
-                            UpdatePositionEvent::POSITION_ABSOLUTE,
-                            $desc->classement);
+                        if (property_exists($desc, 'classement')) {
+                            // Updater position
+                            $update_position_event = new UpdatePositionEvent(
+                                $event->getFeatureAv()->getId(),
+                                UpdatePositionEvent::POSITION_ABSOLUTE,
+                                $desc->classement);
 
-                        $this->dispatcher->dispatch(TheliaEvents::FEATURE_AV_UPDATE_POSITION, $update_position_event);
+                            $this->dispatcher->dispatch(TheliaEvents::FEATURE_AV_UPDATE_POSITION, $update_position_event);
+                        }
 
                         $this->feat_av_corresp->addEntry($caracdisp->id, $event->getFeatureAv()->getId());
                     }

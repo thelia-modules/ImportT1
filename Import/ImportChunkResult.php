@@ -25,9 +25,17 @@ namespace ImportT1\Import;
 
 class ImportChunkResult
 {
+    /** @var int */
     private $count = 0;
+
+    /** @var int  */
     private $errors = 0;
 
+    /**
+     * ImportChunkResult constructor.
+     * @param int $count
+     * @param int $errors
+     */
     public function __construct($count, $errors)
     {
         $this->count = $count;
@@ -35,7 +43,7 @@ class ImportChunkResult
     }
 
     /**
-     * @return the unknown_type
+     * @return int
      */
     public function getCount()
     {
@@ -43,31 +51,32 @@ class ImportChunkResult
     }
 
     /**
-     * @param unknown_type $count
+     * @param int $count
+     * @return $this
      */
     public function setCount($count)
     {
         $this->count = $count;
-
         return $this;
     }
 
     /**
-     * @return the unknown_type
+     * @return int
      */
     public function getErrors()
     {
         return $this->errors;
-        return $this;
     }
 
     /**
-     * @param unknown_type $errors
+     * @param int $errors
+     * @return $this
      */
     public function setErrors($errors)
     {
         $this->errors = $errors;
-
         return $this;
     }
+
+
 }

@@ -32,6 +32,7 @@ use Thelia\Log\Tlog;
 use Thelia\Model\Country;
 use Thelia\Model\CountryI18nQuery;
 use Thelia\Model\CountryQuery;
+use Thelia\Model\Currency;
 use Thelia\Model\CurrencyQuery;
 use Thelia\Model\CustomerTitle;
 use Thelia\Model\CustomerTitleI18nQuery;
@@ -41,9 +42,8 @@ use Thelia\Model\Map\ProductTableMap;
 use Thelia\Model\Map\RewritingUrlTableMap;
 use Thelia\Model\RewritingUrlQuery;
 
-class BaseImport
+abstract class BaseImport
 {
-
     const CHUNK_SIZE = 100;
 
     protected $dispatcher;
@@ -80,10 +80,16 @@ class BaseImport
     {
     }
 
-    public function import($startRecord = 0)
-    {
-        // Override this method, please.
-    }
+    /**
+     * @param int $startRecord
+     * @return ImportChunkResult
+     */
+    abstract public function import($startRecord = 0);
+
+    /**
+     * @return int
+     */
+    abstract public function getTotalCount();
 
     public function postImport()
     {
@@ -99,19 +105,20 @@ class BaseImport
     public function getT2Currency($t1id = false)
     {
         if (!isset($this->currency_cache)) {
+            $code = false;
 
             if ($t1id !== false && $t1id > 0) {
-                $obj = $this->t1db->query_obj("select * from devise where id=?", array($t1id));
+                $code = $this->t1db->query_obj("select * from devise where id=?", array($t1id))->code;
             } else {
                 try {
-                    $obj = $this->t1db->query_obj("select * from devise where defaut=1");
+                    $code = $this->t1db->query_obj("select * from devise where defaut=1")->code;
                 } catch (\Exception $ex) {
-                    // Thelia 1.5.1, no default column
-                    $obj = $this->t1db->query_obj("select * from devise order by id asc limit 1");
+                    // Thelia 1.5.1, no default column, use EUR
+                    $code = "EUR";
                 }
             }
 
-            if ($obj == false) {
+            if ($code === false) {
                 throw new ImportException(
                     Translator::getInstance()->trans(
                         "Failed to find the Thelia 1 currency %cur",
@@ -122,13 +129,18 @@ class BaseImport
 
             }
 
-            $currency = CurrencyQuery::create()->findOneByCode(strtolower($obj->code));
+            $currency = CurrencyQuery::create()->findOneByCode(strtolower($code));
 
             if ($currency === null) {
+                // Use default currency
+                $currency = Currency::getDefaultCurrency();
+
+                Tlog::getInstance()->addWarning("Using default currency for Thelia 1 currency '$code'.");
+
                 throw new ImportException(
                     Translator::getInstance()->trans(
-                        "Failed to find a Thelia 2 lang for Thelia 1 lang code '%code'",
-                        array("%code" => $obj->code),
+                        "Failed to find a Thelia 2 currency for Thelia 1 currency code '%code'",
+                        array("%code" => $code),
                         ImportT1::DOMAIN
                     )
                 );
@@ -187,7 +199,7 @@ class BaseImport
                         $lang
                             ->setTitle($obj->description)
                             ->setCode($obj->code)
-                            ->setLocale("$obj->code" . "_" . strtoupper($obj->code));;
+                            ->setLocale("$obj->code" . "_" . strtoupper($obj->code));
                     } else {
                         $lang
                             ->setTitle("Imported Thelia lang $id_lang_thelia_1")
@@ -206,14 +218,20 @@ class BaseImport
 
                     Tlog::getInstance()->addInfo("Created Thelia 2 lang from Thelia 1 lang ID=$id_lang_thelia_1");
 
+                } else {
+                    // Use default lang
+                    $lang = Lang::getDefaultLanguage();
+
+                    Tlog::getInstance()->addWarning("Using default currency for Thelia 1 currency '$obj->code'.");
+
+                    throw new ImportException(
+                        Translator::getInstance()->trans(
+                            "Failed to find a Thelia 2 lang for Thelia 1 lang id %id",
+                            array("%id" => $id_lang_thelia_1),
+                            ImportT1::DOMAIN
+                        )
+                    );
                 }
-                throw new ImportException(
-                    Translator::getInstance()->trans(
-                        "Failed to find a Thelia 2 lang for Thelia 1 lang id %id",
-                        array("%id" => $id_lang_thelia_1),
-                        ImportT1::DOMAIN
-                    )
-                );
             }
 
             $this->lang_cache[$id_lang_thelia_1] = $lang;
@@ -275,9 +293,7 @@ class BaseImport
                     if ($id_title_thelia_1 == 2) {
                         $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('Mlle');
                     } else {
-                        if ($id_title_thelia_1 == 3) {
-                            $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('M.');
-                        }
+                        $title = CustomerTitleI18nQuery::create()->filterByLocale('fr_FR')->findOneByShort('M.');
                     }
                 }
             }
@@ -338,17 +354,28 @@ class BaseImport
 
                 $id = $obj->pays;
 
-                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle(
-                        "$obj->titre%"
-                    )
-                ) {
-                    throw new ImportException(
-                        Translator::getInstance()->trans(
-                            "Failed to find a Thelia 1 country for '%title'",
-                            array("%title" => $obj->titre),
-                            ImportT1::DOMAIN
-                        )
-                    );
+                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle("$obj->titre%")) {
+                    // Essayer autre chose si le pays est de la forme "USA - New York"
+                    $splitted = explode(' - ', $obj->titre);
+                    if (count($splitted) == 2) {
+                        if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle($splitted[0])) {
+                            throw new ImportException(
+                                Translator::getInstance()->trans(
+                                    "Failed to find a Thelia 2 country for Thelia 1 country '%title'",
+                                    array("%title" => $splitted[0] . " (exracted from $obj->titre)"),
+                                    ImportT1::DOMAIN
+                                )
+                            );
+                        }
+                    } else {
+                        throw new ImportException(
+                            Translator::getInstance()->trans(
+                                "Failed to find a Thelia 2 country for Thelia 1 country '%title'",
+                                array("%title" => $obj->titre),
+                                ImportT1::DOMAIN
+                            )
+                        );
+                    }
                 }
 
                 $country = CountryQuery::create()->findPk($countryI18n->getId());
@@ -373,21 +400,76 @@ class BaseImport
         return $this->country_cache[$id_country_thelia_1];
     }
 
-    protected function updateRewrittenUrl($t2_object, $locale, $id_lang_t1, $fond_t1, $params_t1)
+    function mb_strtr($str, $from, $to)
     {
+        return str_replace($this->mb_str_split($from), $this->mb_str_split($to), $str);
+    }
+
+    function mb_str_split($str) {
+        return preg_split('~~u', $str, null, PREG_SPLIT_NO_EMPTY);
+
+    }
+
+    function ereg_caracspec($chaine)
+    {
+        $avant = "àáâãäåòóôõöøèéêëçìíîïùúûüÿñÁÂÀÅÃÄÇÉÊÈËÓÔÒØÕÖÚÛÙÜ:;,°";
+        $apres = "aaaaaaooooooeeeeciiiiuuuuynaaaaaaceeeeoooooouuuu----";
+
+        $chaine = strtolower($chaine);
+        $chaine = $this->mb_strtr($chaine, $avant, $apres);
+
+        $chaine = str_replace("(", "", $chaine);
+        $chaine = str_replace(")", "", $chaine);
+        $chaine = str_replace("/", "-", $chaine);
+        $chaine = str_replace(" ", "-", $chaine);
+        $chaine = str_replace(chr(39), "-", $chaine);
+        $chaine = str_replace(chr(234), "e", $chaine);
+        $chaine = str_replace("'", "-", $chaine);
+        $chaine = str_replace("&", "-", $chaine);
+        $chaine = str_replace("?", "", $chaine);
+        $chaine = str_replace("*", "-", $chaine);
+        $chaine = str_replace(".", "", $chaine);
+        $chaine = str_replace("!", "", $chaine);
+        $chaine = str_replace("+", "-", $chaine);
+        $chaine = preg_replace('/-+/', '-', $chaine);
+        $chaine = str_replace("%", "", $chaine);
+
+        return $chaine;
+    }
+
+    function eregurl($url)
+    {
+        $url =  html_entity_decode($url);
+
+        $url = $this->ereg_caracspec($url);
+
+        $url = strip_tags($url);
+
+        return $url . ".html";
+    }
+
+    protected function makeT1RewrittenUrl($t1Object, $t1descObj, $id_lang_t1) {
+        return false;
+    }
+
+    protected function updateRewrittenUrl($t2_object, $locale, $id_lang_t1, $fond_t1, $params_t1, $t1_object, $t1_desc_object)
+    {
+        $url = null;
+
         try {
             $t1_obj = $this->t1db->query_obj(
                 "select * from reecriture where fond=? and param like? and lang=? and actif=1",
                 array($fond_t1, "&$params_t1", $id_lang_t1)
             );
+
+            $url = $t1_obj->url;
         }
         catch (\Exception $ex) {
-            $t1_obj = false;
+            $url = $this->makeT1RewrittenUrl($t1_object, $t1_desc_object, $id_lang_t1);
         }
 
-        if ($t1_obj) {
-
-            Tlog::getInstance()->info("Found rewritten URL $t1_obj->url for fond $fond_t1, with params $params_t1");
+        if (null !== $url) {
+            Tlog::getInstance()->info("Found rewritten URL $url for fond $fond_t1, with params $params_t1");
 
             try {
                 // Delete all previous instance for the T2 object and for the rewritten URL
@@ -404,14 +486,14 @@ class BaseImport
 
                 RewritingUrlQuery::create()
                     ->filterByViewLocale($locale)
-                    ->findByUrl($t1_obj->url)
+                    ->findByUrl($url)
                     ->delete();
 
                 $con->exec('SET FOREIGN_KEY_CHECKS=1');
 
-                $t2_object->setRewrittenUrl($locale, $t1_obj->url);
+                $t2_object->setRewrittenUrl($locale, $url);
 
-                Tlog::getInstance()->info("Imported rewritten URL for locale $locale, $t1_obj->url");
+                Tlog::getInstance()->info("Imported rewritten URL for locale $locale, $url");
 
             } catch (\Exception $ex) {
                 Tlog::getInstance()

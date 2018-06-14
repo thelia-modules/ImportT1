@@ -1,24 +1,24 @@
 {extends file="importt1.tpl"}
 
-{block name="step"}{intl l='importt1.bo.default' l='Review'}{/block}
+{block name="step"}{intl d='importt1.bo.default' l='Review'}{/block}
 
 {block name="inner-content"}
 <div class="row">
-    <div class="col-md-7 title">{intl l='importt1.bo.default' l="Review parameters"}</div>
+    <div class="col-md-7 title">{intl d='importt1.bo.default' l="Review parameters"}</div>
 </div>
 
 <div class="row">
     <div class="col-md-12">
-        <p>{intl l='importt1.bo.default' l="Please review the importation parameters below, and click start to begin the import process."}</p>
+        <p>{intl d='importt1.bo.default' l="Please review the importation parameters below, and click start to begin the import process."}</p>
 
         <ul>
-            <li>{intl l='importt1.bo.default' l="Database: <strong>%db</strong>" db=$dbname}</li>
-            <li>{intl l='importt1.bo.default' l="Host: <strong>%host</strong>" host=$hostname}</li>
-            <li>{intl l='importt1.bo.default' l="Thelia 1 shop name : <strong>%shopname</strong>" shopname=$shop_name}</li>
-            <li>{intl l='importt1.bo.default' l="Thelia 1 version : <strong>%version</strong>" version=$version}</li>
-            <li>{intl l='importt1.bo.default' l="Thelia 1 client directory path : "}
+            <li>{intl d='importt1.bo.default' l="Database: <strong>%db</strong>" db=$dbname}</li>
+            <li>{intl d='importt1.bo.default' l="Host: <strong>%host</strong>" host=$hostname}</li>
+            <li>{intl d='importt1.bo.default' l="Thelia 1 shop name : <strong>%shopname</strong>" shopname=$shop_name}</li>
+            <li>{intl d='importt1.bo.default' l="Thelia 1 version : <strong>%version</strong>" version=$version}</li>
+            <li>{intl d='importt1.bo.default' l="Thelia 1 client directory path : "}
                 <strong>{if empty($client_directory)}
-                    {intl l='importt1.bo.default' l="Not specified - images and documents will not be imported."}
+                    {intl d='importt1.bo.default' l="Not specified - images and documents will not be imported."}
                     {else}
                     {$client_directory}
                     {/if}
@@ -26,28 +26,46 @@
             </li>
         </ul>
 
-        <div class="well well-sm">{intl l='importt1.bo.default' l="<strong>IMPORTANT:</strong> If you get an error saying 'Maximum execution time of nn seconds excedeed', just reload the page (hit F5), and the import process will continue."}</div>
+        <div class="well well-sm">{intl d='importt1.bo.default' l="<strong>IMPORTANT:</strong> If you get an error saying 'Maximum execution time of nn seconds excedeed', just reload the page (hit F5), and the import process will continue."}</div>
 
         <p>
-            {intl l='importt1.bo.default' l="During a long import, you can hit the \"Stop\" button at any time to stop the importation."}<br />
-            {intl l='importt1.bo.default' l="A \"Start Over\" button will appear. This button restarts from the beginning the current importation (e.g. customers, features, or products, etc.) but not the whole process."}<br />
-            {intl l='importt1.bo.default' l="A \"Resume\" button is also displayed. It will continue the process where it was interrupted."}
+            {intl d='importt1.bo.default' l="During a long import, you can hit the \"Stop\" button at any time to stop the importation."}<br />
+            {intl d='importt1.bo.default' l="A \"Start Over\" button will appear. This button restarts from the beginning the current importation (e.g. customers, features, or products, etc.) but not the whole process."}<br />
+            {intl d='importt1.bo.default' l="A \"Resume\" button is also displayed. It will continue the process where it was interrupted."}
         </p>
 
         <p>Things will be a bit messy during the import, do no try to use your shop during this time</p>
     </div>
 </div>
 
+{if $already_done}
+    <div class="alert alert-info">
+        {intl l='An import was already done. You can restart a complete import by clicking the "Next" button, or choose to import only customers and orders, without any changes on products and contents, by clicking the "Import only customers and orders" button.'}
+    </div>
+{/if}
+
 <div class="row">
     <div class="col-md-12">
-        <div class="btn-toolbar" role="toolbar">
-            <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-default"><span
-                    class="glyphicon glyphicon-backward"></span> {intl l='importt1.bo.default' l="Previous"}</a>
-            <a href="{url path='/admin/module/ImportT1/customer/0/0'}" class="btn btn-primary pull-right next">{intl l='importt1.bo.default' l="Next"}
-                <span class="glyphicon glyphicon-forward"></span></a>
+        <div class="btn-box">
+            <a href="{url path='/admin/module/ImportT1/select-db'}" class="btn btn-default">
+                <i class="glyphicon glyphicon-backward"></i> {intl d='importt1.bo.default' l="Previous"}
+            </a>
+
+            <div class="pull-right">
+                {if $already_done}
+                    <a href="{url path='/admin/module/ImportT1/customer/0/0' clearLog=1}" class="btn btn-primary next">
+                        {intl d='importt1.bo.default' l="Import only customers and orders"} <span class="glyphicon glyphicon-forward"></span>
+                    </a>
+                {/if}
+
+                <a href="{url path='/admin/module/ImportT1/startup'}" class="btn btn-primary">
+                    {intl d='importt1.bo.default' l="Next"} <i class="glyphicon glyphicon-forward"></i>
+                </a>
+            </div>
         </div>
     </div>
 </div>
+
 {/block}
 
 {block name="javascript-initialization"}
@@ -56,7 +74,7 @@
     $(function () {
         $('.next').click(function(ev) {
             $(this).prop('disabled', true);
-            $(this).text("{intl l='importt1.bo.default' l="Please wait, working..."}");
+            $(this).text("{intl d='importt1.bo.default' l="Please wait, working..."}");
         });
     });
 </script>

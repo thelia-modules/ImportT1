@@ -51,6 +51,7 @@ class OrdersImport extends BaseImport
     private $tax_corresp;
     private $order_corresp;
     private $cust_corresp;
+    private $order_status_corresp;
 
     public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
     {
@@ -62,18 +63,28 @@ class OrdersImport extends BaseImport
         $this->tax_corresp = new CorrespondanceTable(CorrespondanceTable::TAX, $this->t1db);
         $this->order_corresp = new CorrespondanceTable(CorrespondanceTable::ORDERS, $this->t1db);
         $this->cust_corresp = new CorrespondanceTable(CorrespondanceTable::CUSTOMERS, $this->t1db);
-
+        $this->order_status_corresp = new CorrespondanceTable(CorrespondanceTable::ORDER_STATUS, $this->t1db);
     }
 
     public function getChunkSize()
     {
         return 100;
     }
+
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     public function getTotalCount()
     {
-        return $this->t1db->num_rows($this->t1db->query("select id from commande"));
+        return $this->t1db->num_rows($this->t1db->query("select id from commande where statut <> 5"));
     }
 
+    /**
+     * @throws ImportException
+     * @throws \Exception
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     public function preImport()
     {
         // Delete table before proceeding
@@ -88,10 +99,21 @@ class OrdersImport extends BaseImport
         $this->importCustomOrderStatus();
     }
 
+    /**
+     * @throws ImportException
+     * @throws \Exception
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     public function importCustomOrderStatus()
     {
+        $this->order_status_corresp->reset();
+
         // Assume Thelia status are the same up to ID #5
         $hdl = $this->t1db->query("select * from statut where id > ?", array(5));
+
+        for ($idx = 1; $idx <= 5; $idx++) {
+            $this->order_status_corresp->addEntry($idx, $idx);
+        }
 
         while ($hdl && $statut = $this->t1db->fetch_object($hdl)) {
             $ct = new OrderStatus();
@@ -102,6 +124,7 @@ class OrdersImport extends BaseImport
             );
 
             foreach ($descs as $desc) {
+
                 $lang = $this->getT2Lang($desc->lang);
 
                 $ct
@@ -111,10 +134,17 @@ class OrdersImport extends BaseImport
                     ->setChapo($desc->chapo)
                     ->setDescription($desc->description)
                     ->save();
+
+                $this->order_status_corresp->addEntry($statut->id, $ct->getId());
             }
         }
     }
 
+    /**
+     * @param int $startRecord
+     * @return ImportChunkResult
+     * @throws \Exception
+     */
     public function import($startRecord = 0)
     {
 
@@ -125,7 +155,7 @@ class OrdersImport extends BaseImport
         $hdl = $this->t1db
             ->query(
                 sprintf(
-                    "select * from commande order by id asc limit %d, %d",
+                    "select * from commande where statut <> 5 order by id asc limit %d, %d",
                     intval($startRecord),
                     $this->getChunkSize()
                 )
@@ -149,10 +179,6 @@ class OrdersImport extends BaseImport
                     $this->cust_corresp->getT2($commande->client)
                 )) {
                     throw new ImportException("Failed to find customer ID=$commande->client");
-                }
-
-                if (null === $status = OrderStatusQuery::create()->findPk($commande->statut)) {
-                    throw new ImportException("Failed to find order status ID=$commande->statut");
                 }
 
                 // Create invoice address
@@ -214,6 +240,8 @@ class OrdersImport extends BaseImport
                     $deliveryModule = ModuleQuery::create()->findOneByType(BaseModule::DELIVERY_MODULE_TYPE);
                     $paymentModule  = ModuleQuery::create()->findOneByType(BaseModule::PAYMENT_MODULE_TYPE);
 
+                    $idPaiement = $paymentModule->getId();
+                    $idTransport = $deliveryModule->getId();
 
                     // Create a cart (now required)
                     $cart = new Cart();
@@ -229,12 +257,12 @@ class OrdersImport extends BaseImport
                         ->setDeliveryRef($commande->livraison)
                         ->setInvoiceRef($commande->facture)
                         ->setPostage($commande->port)
-                        ->setStatusId($status->getId())
+                        ->setStatusId($this->order_status_corresp->getT2($commande->statut))
                         ->setLang($this->getT2Lang($commande->lang))
                         ->setDeliveryOrderAddressId($delivery_adr->getId())
                         ->setInvoiceOrderAddressId($billing_adr->getId())
-                        ->setDeliveryModuleId($deliveryModule->getId())
-                        ->setPaymentModuleId($paymentModule->getId())
+                        ->setDeliveryModuleId($idTransport)
+                        ->setPaymentModuleId($idPaiement)
                         ->setDiscount($commande->remise)
                         ->setCartId($cart->getId())
                         ->save($con);
@@ -261,7 +289,7 @@ class OrdersImport extends BaseImport
                             ->setIsCumulative(false)
                             ->setIsRemovingPostage(false)
                             ->setIsAvailableOnSpecialOffers(false)
-                            ->setSerializedConditions(new ConditionCollection(array()))
+                            ->setSerializedConditions(new ConditionCollection())
                             ->save($con);
                     }
 
@@ -291,8 +319,8 @@ class OrdersImport extends BaseImport
                             ->setWasInPromo(false) // Not Available in T1
                             ->setWeight(0) // Not Available in T1
                             ->setEanCode("") // Not Available in T1
-                            ->setTaxRuleTitle("")
-                            ->setTaxRuleDescription("")
+                            ->setTaxRuleTitle("TVA $vp->tva %")
+                            ->setTaxRuleDescription("TVA $vp->tva %")
                             ->setParent($parent)
                             ->save($con);
 

@@ -31,7 +31,6 @@ use Thelia\Core\Translation\Translator;
  */
 class CorrespondanceTable
 {
-
     const CUSTOMERS = 't1_t2_customer';
     const ATTRIBUTES = 't1_t2_attribute';
     const ATTRIBUTES_AV = 't1_t2_attributes_av';
@@ -44,6 +43,7 @@ class CorrespondanceTable
     const TEMPLATES = 't1_t2_template';
     const TAX = 't1_t2_tax';
     const ORDERS = 't1_t2_order';
+    const ORDER_STATUS = 't1_t2_order_status';
 
     protected $table_name;
     protected $db;

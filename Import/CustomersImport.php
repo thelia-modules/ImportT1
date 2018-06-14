@@ -37,9 +37,7 @@ use Thelia\Model\CustomerQuery;
 use Thelia\Model\CustomerTitle;
 use Thelia\Model\CustomerTitleQuery;
 use Thelia\Model\Map\CustomerTitleTableMap;
-use Thelia\Model\Map\RewritingUrlTableMap;
 use Thelia\Model\OrderQuery;
-use Thelia\Model\RewritingUrlQuery;
 
 class CustomersImport extends BaseImport
 {
@@ -61,6 +59,9 @@ class CustomersImport extends BaseImport
         );
     }
 
+    /**
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     public function preImport()
     {
         // Empty address, customer and customer title table
@@ -68,13 +69,6 @@ class CustomersImport extends BaseImport
         AddressQuery::create()->deleteAll();
         OrderAddressQuery::create()->deleteAll();
         CustomerQuery::create()->deleteAll();
-
-        // Also empty url rewriting table
-        $con = Propel::getConnection(RewritingUrlTableMap::DATABASE_NAME);
-
-        $con->exec('SET FOREIGN_KEY_CHECKS=0');
-        RewritingUrlQuery::create()->deleteAll();
-        $con->exec('SET FOREIGN_KEY_CHECKS=1');
 
         $this->cust_corresp->reset();
 

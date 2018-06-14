@@ -30,6 +30,7 @@ use Front\Controller\CustomerController as BaseCustomerController;
 use Thelia\Core\Event\Customer\CustomerLoginEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Form\CustomerLogin;
+use Thelia\Log\Tlog;
 use Thelia\Model\CustomerQuery;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -65,13 +66,13 @@ class CustomerController extends BaseFrontController
                     $customer = CustomerQuery::create()
                         ->findOneByEmail($form->get('email')->getData());
 
+                    if (null !== $customer) {
                     $customer->setPassword($form->get('password')->getData())
                         ->save();
 
                     $customerTemp
                         ->setProcessed(true)
-                        ->save();
-                    ;
+                            ->save();;
 
                     $this->dispatch(TheliaEvents::CUSTOMER_LOGIN, new CustomerLoginEvent($customer));
                     
@@ -79,9 +80,9 @@ class CustomerController extends BaseFrontController
 
                     $response = RedirectResponse::create($successUrl);
                 }
-
+                }
             } catch (\Exception $e) {
-
+                Tlog::getInstance()->error($e->getMessage());
             }
 
         }

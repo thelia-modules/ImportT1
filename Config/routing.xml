@@ -28,6 +28,10 @@
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::reviewAction</default>
     </route>
 
+    <route id="importT1.startup" path="/admin/module/ImportT1/startup">
+        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::startupAction</default>
+    </route>
+
     <!-- Customer importation -->
     <route id="importT1.customer" path="/admin/module/ImportT1/customer/{start}/{total_errors}">
         <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importCustomersAction</default>
