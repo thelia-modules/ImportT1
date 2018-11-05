@@ -25,6 +25,7 @@ namespace ImportT1\Import;
 
 use ImportT1\ImportT1;
 use ImportT1\Model\Db;
+use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thelia\Core\Translation\Translator;
@@ -164,7 +165,6 @@ abstract class BaseImport
         $lang = null;
 
         if (!isset($this->lang_cache[$id_lang_thelia_1])) {
-
             if ($id_lang_thelia_1 > 0) {
                 $obj = $this->t1db->query_obj("select * from lang where id=?", array($id_lang_thelia_1));
             } else {
@@ -189,10 +189,8 @@ abstract class BaseImport
             }
 
             if ($lang === null) {
-
                 // If the lang id is not zero, create it in T2
                 if ($id_lang_thelia_1 > 0) {
-
                     $lang = new Lang();
 
                     if (isset($obj->code)) {
@@ -324,7 +322,6 @@ abstract class BaseImport
     public function getT2Country($id_country_thelia_1)
     {
         if (!isset($this->country_cache[$id_country_thelia_1])) {
-
             $id = $id_country_thelia_1;
 
             $country = null;
@@ -336,7 +333,6 @@ abstract class BaseImport
             }
 
             if ($obj == false) {
-
                 $obj = $this->t1db->query_obj(
                     "select pays, titre from paysdesc where pays=? and lang=1",
                     array($id_country_thelia_1)
@@ -354,7 +350,7 @@ abstract class BaseImport
 
                 $id = $obj->pays;
 
-                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->findOneByTitle("$obj->titre%")) {
+                if (null === $countryI18n = CountryI18nQuery::create()->filterByLocale('fr_FR')->filterByTitle("$obj->titre%", Criteria::LIKE)->findOne()) {
                     // Essayer autre chose si le pays est de la forme "USA - New York"
                     $splitted = explode(' - ', $obj->titre);
                     if (count($splitted) == 2) {
@@ -400,17 +396,17 @@ abstract class BaseImport
         return $this->country_cache[$id_country_thelia_1];
     }
 
-    function mb_strtr($str, $from, $to)
+    protected function mb_strtr($str, $from, $to)
     {
         return str_replace($this->mb_str_split($from), $this->mb_str_split($to), $str);
     }
 
-    function mb_str_split($str) {
+    protected function mb_str_split($str) {
         return preg_split('~~u', $str, null, PREG_SPLIT_NO_EMPTY);
 
     }
 
-    function ereg_caracspec($chaine)
+    protected function ereg_caracspec($chaine)
     {
         $avant = "àáâãäåòóôõöøèéêëçìíîïùúûüÿñÁÂÀÅÃÄÇÉÊÈËÓÔÒØÕÖÚÛÙÜ:;,°";
         $apres = "aaaaaaooooooeeeeciiiiuuuuynaaaaaaceeeeoooooouuuu----";
@@ -463,8 +459,7 @@ abstract class BaseImport
             );
 
             $url = $t1_obj->url;
-        }
-        catch (\Exception $ex) {
+        } catch (\Exception $ex) {
             $url = $this->makeT1RewrittenUrl($t1_object, $t1_desc_object, $id_lang_t1);
         }
 
