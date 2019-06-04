@@ -1,0 +1,32 @@
+{extends file="importt1.tpl"}
+
+{block name="step"}{intl d='importt1.bo.default' l='Import aborted'}{/block}
+
+{block name="inner-content"}
+    <div class="row">
+        <div class="col-md-7 title">{intl d='importt1.bo.default' l="The import could not be completed"}</div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <p>{intl d='importt1.bo.default' l="Sorry, something goes wrong during import."}</p>
+
+            <div class="alert alert-danger">
+                {$error_message nofilter}
+            </div>
+
+            <p>{intl d='importt1.bo.default' l="Please fix the error cause, and try to restart the importation process."}</p>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="btn-box">
+                        <a href="{url path='/admin/module/ImportT1'}" class="btn btn-primary">
+                            {intl d='importt1.bo.default' l="Start over"}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{/block}

@@ -300,7 +300,10 @@ class ImportT1Controller extends BaseAdminController
         } catch (\Exception $ex) {
             Tlog::getInstance()->addError(sprintf("Failed in %s importation, error: ", $object), $ex);
 
-            return $this->render('import-error');
+            return $this->render(
+                'import-error',
+                [ 'error_message' => sprintf("Failed in %s importation. Error: %s. Please see log/import-log.txt for more details.", $object, $ex->getMessage()) ]
+            );
         }
     }
 
