@@ -2,84 +2,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <!-- Login -->
-    <route id="importT1.customer.login.process" path="/login" methods="post">
-        <default key="_controller">ImportT1\Controller\Front\CustomerController::loginAction</default>
-        <default key="_view">login</default>
-    </route>
-
-    <route id="importT1.main" path="/admin/module/ImportT1">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::indexAction</default>
-    </route>
-
-    <route id="importT1.log" path="/admin/module/ImportT1/show-log">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::showLogAction</default>
-    </route>
-
-    <route id="importT1.select-db" path="/admin/module/ImportT1/select-db">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::selectDbAction</default>
-    </route>
-
-    <route id="importT1.check-db" path="/admin/module/ImportT1/check-db">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::checkDbAction</default>
-    </route>
-
-    <route id="importT1.review" path="/admin/module/ImportT1/review">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::reviewAction</default>
-    </route>
-
-    <route id="importT1.startup" path="/admin/module/ImportT1/startup">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::startupAction</default>
-    </route>
-
-    <!-- Customer importation -->
-    <route id="importT1.customer" path="/admin/module/ImportT1/customer/{start}/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importCustomersAction</default>
-    </route>
-
-    <!-- Folders importation -->
-    <route id="importT1.folder" path="/admin/module/ImportT1/folder/{start}/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importFoldersAction</default>
-    </route>
-
-    <!-- Contents importation -->
-    <route id="importT1.content" path="/admin/module/ImportT1/content/{start}/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importContentsAction</default>
-    </route>
-
-    <!-- Features importation -->
-    <route id="importT1.feature" path="/admin/module/ImportT1/feature/{start}/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importFeaturesAction</default>
-    </route>
-
-    <!-- Attributes importation -->
-    <route id="importT1.attribute" path="/admin/module/ImportT1/attribute/{start}/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importAttributesAction</default>
-    </route>
-
-    <!-- Categories importation -->
-    <route id="importT1.categorie" path="/admin/module/ImportT1/category/{start}/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importCategoriesAction</default>
-    </route>
-
-    <!-- Products importation -->
-    <route id="importT1.product" path="/admin/module/ImportT1/product/{start}/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importProductsAction</default>
-    </route>
-
-    <!-- Orders importation -->
-    <route id="importT1.order" path="/admin/module/ImportT1/order/{start}/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importOrdersAction</default>
-    </route>
-
-    <!-- Done ! -->
-    <route id="importT1.done" path="/admin/module/ImportT1/done/{total_errors}">
-        <default key="_controller">ImportT1\Controller\Admin\ImportT1Controller::importDoneAction</default>
-    </route>
-
     <!-- The default route, to display a template -->
 
-    <route id="importT1.processTemplate" path="/admin/module/ImportT1/{template}">
+    <route id="importT1.processTemplate" path=" /admin/module/ImportT1/{template}">
         <default key="_controller">Thelia\Controller\Admin\AdminController::processTemplateAction</default>
         <requirement key="template">.*</requirement>
     </route>

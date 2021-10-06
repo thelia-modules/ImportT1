@@ -27,6 +27,7 @@ use ImportT1\Model\CustomerTemp;
 use ImportT1\Model\Db;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Event\Address\AddressCreateOrUpdateEvent;
 use Thelia\Core\Event\Customer\CustomerCreateOrUpdateEvent;
 use Thelia\Core\Event\TheliaEvents;
@@ -44,10 +45,10 @@ class CustomersImport extends BaseImport
 
     protected $cust_corresp;
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db, RequestStack $requestStack)
     {
 
-        parent::__construct($dispatcher, $t1db);
+        parent::__construct($dispatcher, $t1db, $requestStack->getCurrentRequest()->getSession());
 
         $this->cust_corresp = new CorrespondanceTable(CorrespondanceTable::CUSTOMERS, $this->t1db);
     }
@@ -128,13 +129,13 @@ class CustomersImport extends BaseImport
                     $client->email, // Password !
                     $lang->getId(),
                     $client->type == 1 ? true : false, // Revendeur
-                    $sponsor,
+                    (int)$sponsor,
                     $client->pourcentage,
                     $client->entreprise,
                     $client->ref
                 );
 
-                $this->dispatcher->dispatch(TheliaEvents::CUSTOMER_CREATEACCOUNT, $event);
+                $this->dispatcher->dispatch($event, TheliaEvents::CUSTOMER_CREATEACCOUNT);
 
                 Tlog::getInstance()->info(
                     "Created customer " . $event->getCustomer()->getId() . " from $client->ref ($client->id)"
@@ -173,7 +174,7 @@ class CustomersImport extends BaseImport
 
                         $adr_event->setCustomer($event->getCustomer());
 
-                        $this->dispatcher->dispatch(TheliaEvents::ADDRESS_CREATE, $adr_event);
+                        $this->dispatcher->dispatch($adr_event, TheliaEvents::ADDRESS_CREATE);
 
                         Tlog::getInstance()->info(
                             "Created address " . $adr_event->getAddress()->getId(

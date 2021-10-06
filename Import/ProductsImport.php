@@ -27,6 +27,7 @@ use ImportT1\Import\Media\ProductDocumentImport;
 use ImportT1\Import\Media\ProductImageImport;
 use ImportT1\Model\Db;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Event\FeatureProduct\FeatureProductUpdateEvent;
 use Thelia\Core\Event\Product\ProductAddAccessoryEvent;
 use Thelia\Core\Event\Product\ProductAddContentEvent;
@@ -63,11 +64,14 @@ class ProductsImport extends BaseImport
     private $attr_corresp;
     private $attr_av_corresp;
     private $content_corresp;
+    private $requestStack;
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db, RequestStack $requestStack)
     {
 
-        parent::__construct($dispatcher, $t1db);
+        parent::__construct($dispatcher, $t1db, $requestStack->getCurrentRequest()->getSession());
+
+        $this->requestStack = $requestStack;
 
         $this->product_corresp = new CorrespondanceTable(CorrespondanceTable::PRODUCTS, $this->t1db);
 
@@ -144,8 +148,8 @@ class ProductsImport extends BaseImport
                 )
             );
 
-        $image_import = new ProductImageImport($this->dispatcher, $this->t1db);
-        $document_import = new ProductDocumentImport($this->dispatcher, $this->t1db);
+        $image_import = new ProductImageImport($this->dispatcher, $this->t1db, $this->requestStack->getCurrentRequest()->getSession());
+        $document_import = new ProductDocumentImport($this->dispatcher, $this->t1db, $this->requestStack->getCurrentRequest()->getSession());
 
         while ($hdl && $produit = $this->t1db->fetch_object($hdl)) {
             $count++;
@@ -243,7 +247,7 @@ class ProductsImport extends BaseImport
                                 ->setTaxRuleId($this->tax_corresp->getT2(1000 * $produit->tva))
                                 ->setCurrencyId($this->getT2Currency()->getId());
 
-                            $this->dispatcher->dispatch(TheliaEvents::PRODUCT_CREATE, $event);
+                            $this->dispatcher->dispatch($event, TheliaEvents::PRODUCT_CREATE);
 
                             $product_id = $event->getProduct()->getId();
 
@@ -257,7 +261,7 @@ class ProductsImport extends BaseImport
                                     $this->getT2Currency()->getId()
                                 );
 
-                                $this->dispatcher->dispatch(TheliaEvents::PRODUCT_SET_TEMPLATE, $pste);
+                                $this->dispatcher->dispatch($pste, TheliaEvents::PRODUCT_SET_TEMPLATE);
                             } catch (ImportException $ex) {
                                 Tlog::getInstance()
                                     ->addWarning(
@@ -276,8 +280,8 @@ class ProductsImport extends BaseImport
                             );
 
                             $this->dispatcher->dispatch(
-                                TheliaEvents::PRODUCT_ADD_PRODUCT_SALE_ELEMENT,
-                                $create_pse_event
+                                $create_pse_event,
+                                TheliaEvents::PRODUCT_ADD_PRODUCT_SALE_ELEMENT
                             );
 
                             $update_pse_event = new ProductSaleElementUpdateEvent(
@@ -300,8 +304,8 @@ class ProductsImport extends BaseImport
                                 ->setFromDefaultCurrency(0);
 
                             $this->dispatcher->dispatch(
-                                TheliaEvents::PRODUCT_UPDATE_PRODUCT_SALE_ELEMENT,
-                                $update_pse_event
+                                $update_pse_event,
+                                TheliaEvents::PRODUCT_UPDATE_PRODUCT_SALE_ELEMENT
                             );
 
                             // Update position
@@ -313,7 +317,7 @@ class ProductsImport extends BaseImport
                                 $produit->classement
                             );
 
-                            $this->dispatcher->dispatch(TheliaEvents::PRODUCT_UPDATE_POSITION, $update_position_event);
+                            $this->dispatcher->dispatch($update_position_event, TheliaEvents::PRODUCT_UPDATE_POSITION);
 
                             Tlog::getInstance()->info(
                                 "Created product $product_id from $objdesc->titre ($produit->id)"
@@ -333,7 +337,7 @@ class ProductsImport extends BaseImport
                                     $content_event = new ProductAddContentEvent($event->getProduct(
                                     ), $this->content_corresp->getT2($content->contenu));
 
-                                    $this->dispatcher->dispatch(TheliaEvents::PRODUCT_ADD_CONTENT, $content_event);
+                                    $this->dispatcher->dispatch($content_event, TheliaEvents::PRODUCT_ADD_CONTENT);
                                 } catch (\Exception $ex) {
                                     Tlog::getInstance()
                                         ->addError(
@@ -377,8 +381,8 @@ class ProductsImport extends BaseImport
                                     }
 
                                     $this->dispatcher->dispatch(
-                                        TheliaEvents::PRODUCT_FEATURE_UPDATE_VALUE,
-                                        $feature_value_event
+                                        $feature_value_event,
+                                        TheliaEvents::PRODUCT_FEATURE_UPDATE_VALUE
                                     );
                                 } catch (\Exception $ex) {
                                     Tlog::getInstance()
@@ -440,8 +444,8 @@ class ProductsImport extends BaseImport
                                         );
 
                                         $this->dispatcher->dispatch(
-                                            TheliaEvents::PRODUCT_ADD_PRODUCT_SALE_ELEMENT,
-                                            $pse_create_event
+                                            $pse_create_event,
+                                            TheliaEvents::PRODUCT_ADD_PRODUCT_SALE_ELEMENT
                                         );
 
                                         $pse_update_event = new ProductSaleElementUpdateEvent(
@@ -464,8 +468,8 @@ class ProductsImport extends BaseImport
                                             ->setFromDefaultCurrency(0);
 
                                         $this->dispatcher->dispatch(
-                                            TheliaEvents::PRODUCT_UPDATE_PRODUCT_SALE_ELEMENT,
-                                            $pse_update_event
+                                            $pse_update_event,
+                                            TheliaEvents::PRODUCT_UPDATE_PRODUCT_SALE_ELEMENT
                                         );
                                     } catch (\Exception $ex) {
                                         Tlog::getInstance()
@@ -501,7 +505,7 @@ class ProductsImport extends BaseImport
                             ->setVisible($produit->ligne == 1 ? true : false)
                             ->setDefaultCategory($this->cat_corresp->getT2($produit->rubrique));
 
-                        $this->dispatcher->dispatch(TheliaEvents::PRODUCT_UPDATE, $update_event);
+                        $this->dispatcher->dispatch($update_event, TheliaEvents::PRODUCT_UPDATE);
 
                         // Update the rewritten URL, if one was defined
                         $this->updateRewrittenUrl(
@@ -615,7 +619,7 @@ class ProductsImport extends BaseImport
                 ->setRequirements($ppe->getRequirements());
 
 
-            $this->dispatcher->dispatch(TheliaEvents::TAX_CREATE, $taxEvent);
+            $this->dispatcher->dispatch($taxEvent, TheliaEvents::TAX_CREATE);
 
             $taxEvent->setId($taxEvent->getTax()->getId());
 
@@ -626,7 +630,7 @@ class ProductsImport extends BaseImport
                     ->setLocale($langs[$idx]->getLocale())
                     ->setTitle("TVA $taux_tva->tva%");
 
-                $this->dispatcher->dispatch(TheliaEvents::TAX_UPDATE, $taxEvent);
+                $this->dispatcher->dispatch($taxEvent, TheliaEvents::TAX_UPDATE);
             }
 
             $taxRuleEvent = new TaxRuleEvent();
@@ -639,11 +643,11 @@ class ProductsImport extends BaseImport
                 ->setTaxList(json_encode(array($taxEvent->getTax()->getId())))
             ;
 
-            $this->dispatcher->dispatch(TheliaEvents::TAX_RULE_CREATE, $taxRuleEvent);
+            $this->dispatcher->dispatch($taxRuleEvent, TheliaEvents::TAX_RULE_CREATE);
 
             $taxRuleEvent->setId($taxRuleEvent->getTaxRule()->getId());
 
-            $this->dispatcher->dispatch(TheliaEvents::TAX_RULE_TAXES_UPDATE, $taxRuleEvent);
+            $this->dispatcher->dispatch($taxRuleEvent, TheliaEvents::TAX_RULE_TAXES_UPDATE);
 
             Tlog::getInstance()->info(
                 "Created tax rule ID=" . $taxRuleEvent->getTaxRule()->getId() . " for TVA $taux_tva->tva"
@@ -654,12 +658,12 @@ class ProductsImport extends BaseImport
                     ->setLocale($langs[$idx]->getLocale())
                     ->setTitle("Tax rule for TVA $taux_tva->tva%");
 
-                $this->dispatcher->dispatch(TheliaEvents::TAX_RULE_UPDATE, $taxRuleEvent);
+                $this->dispatcher->dispatch($taxRuleEvent, TheliaEvents::TAX_RULE_UPDATE);
             }
 
             if ($first) {
                 // Set the first created tax rule as the default tax.
-                $this->dispatcher->dispatch(TheliaEvents::TAX_RULE_SET_DEFAULT, $taxRuleEvent);
+                $this->dispatcher->dispatch($taxRuleEvent, TheliaEvents::TAX_RULE_SET_DEFAULT);
             }
 
             $this->tax_corresp->addEntry(1000 * $taux_tva->tva, $taxRuleEvent->getTaxRule()->getId());
@@ -687,7 +691,7 @@ class ProductsImport extends BaseImport
                     $this->product_corresp->getT2($accessoire->accessoire)
                 );
 
-                $this->dispatcher->dispatch(TheliaEvents::PRODUCT_ADD_ACCESSORY, $accessory_event);
+                $this->dispatcher->dispatch($accessory_event, TheliaEvents::PRODUCT_ADD_ACCESSORY);
             } catch (\Exception $ex) {
                 Tlog::getInstance()
                     ->addError(

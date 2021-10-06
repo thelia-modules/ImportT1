@@ -27,6 +27,7 @@ use ImportT1\Import\Media\FolderDocumentImport;
 use ImportT1\Import\Media\FolderImageImport;
 use ImportT1\Model\Db;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Event\Folder\FolderCreateEvent;
 use Thelia\Core\Event\Folder\FolderUpdateEvent;
 use Thelia\Core\Event\TheliaEvents;
@@ -41,11 +42,14 @@ class FoldersImport extends BaseImport
 {
 
     private $fld_corresp;
+    private $requestStack;
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db, RequestStack $requestStack)
     {
 
-        parent::__construct($dispatcher, $t1db);
+        parent::__construct($dispatcher, $t1db, $requestStack->getCurrentRequest()->getSession());
+
+        $this->requestStack = $requestStack;
 
         $this->fld_corresp = new CorrespondanceTable(CorrespondanceTable::FOLDERS, $this->t1db);
     }
@@ -100,8 +104,8 @@ class FoldersImport extends BaseImport
                 )
             );
 
-        $image_import = new FolderImageImport($this->dispatcher, $this->t1db);
-        $document_import = new FolderDocumentImport($this->dispatcher, $this->t1db);
+        $image_import = new FolderImageImport($this->dispatcher, $this->t1db, $this->requestStack->getCurrentRequest()->getSession());
+        $document_import = new FolderDocumentImport($this->dispatcher, $this->t1db, $this->requestStack->getCurrentRequest()->getSession());
 
         while ($hdl && $dossier = $this->t1db->fetch_object($hdl)) {
 
@@ -155,7 +159,7 @@ class FoldersImport extends BaseImport
                             ->setParent($parent) // Will be corrected later
                             ->setVisible($dossier->ligne == 1 ? true : false);
 
-                        $this->dispatcher->dispatch(TheliaEvents::FOLDER_CREATE, $event);
+                        $this->dispatcher->dispatch($event,TheliaEvents::FOLDER_CREATE);
 
                         $folder_id = $event->getFolder()->getId();
 
@@ -165,7 +169,7 @@ class FoldersImport extends BaseImport
                         $update_position_event = new UpdatePositionEvent($folder_id,
                             UpdatePositionEvent::POSITION_ABSOLUTE, $dossier->classement);
 
-                        $this->dispatcher->dispatch(TheliaEvents::FOLDER_UPDATE_POSITION, $update_position_event);
+                        $this->dispatcher->dispatch($update_position_event, TheliaEvents::FOLDER_UPDATE_POSITION);
 
                         $this->fld_corresp->addEntry($dossier->id, $folder_id);
 
@@ -188,7 +192,7 @@ class FoldersImport extends BaseImport
                         ->setDescription($objdesc->description)
                         ->setPostscriptum($objdesc->postscriptum);
 
-                    $this->dispatcher->dispatch(TheliaEvents::FOLDER_UPDATE, $update_event);
+                    $this->dispatcher->dispatch($update_event, TheliaEvents::FOLDER_UPDATE);
 
                     // Update the rewritten URL, if one was defined
                     $this->updateRewrittenUrl(

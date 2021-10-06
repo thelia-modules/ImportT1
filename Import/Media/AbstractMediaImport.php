@@ -49,14 +49,14 @@ abstract class AbstractMediaImport extends BaseImport
 
     public function doImportMedia($t1_object_id, $t2_object_id, $client_path, $local_path)
     {
-        if ($this->t1db->hasClientPath()) {
+        if ($this->t1db->hasClientPath($this->session)) {
             $fs = new Filesystem();
 
             $list = $this->getMediaList($t1_object_id);
 
             foreach ($list as $item) {
 
-                $src_path = $this->t1db->getClientPath() . DS . $client_path . DS . $item->fichier;
+                $src_path = $this->t1db->getClientPath($this->session) . DS . $client_path . DS . $item->fichier;
 
                 if ($fs->exists($src_path)) {
 

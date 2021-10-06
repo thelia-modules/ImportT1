@@ -28,6 +28,8 @@ use ImportT1\Model\Db;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Thelia\Core\HttpFoundation\Session\Session;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
 use Thelia\Model\Country;
@@ -50,14 +52,17 @@ abstract class BaseImport
     protected $dispatcher;
     protected $t1db;
     protected $thelia_version;
+    protected $session;
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db, SessionInterface $session)
     {
         $this->dispatcher = $dispatcher;
 
         $this->t1db = $t1db;
 
-        $this->t1db->connect();
+        $this->t1db->connect($session);
+
+        $this->session = $session;
 
         $hdl = $this->t1db->query("select valeur from variable where nom = 'version'");
 

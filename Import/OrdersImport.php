@@ -27,6 +27,7 @@ use ImportT1\Model\Db;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Condition\ConditionCollection;
 use Thelia\Log\Tlog;
 use Thelia\Model\Cart;
@@ -53,10 +54,10 @@ class OrdersImport extends BaseImport
     private $cust_corresp;
     private $order_status_corresp;
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db, RequestStack $requestStack)
     {
 
-        parent::__construct($dispatcher, $t1db);
+        parent::__construct($dispatcher, $t1db, $requestStack->getCurrentRequest()->getSession());
 
         $this->product_corresp = new CorrespondanceTable(CorrespondanceTable::PRODUCTS, $this->t1db);
         $this->attr_corresp = new CorrespondanceTable(CorrespondanceTable::ATTRIBUTES, $this->t1db);

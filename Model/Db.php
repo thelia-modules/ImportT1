@@ -24,6 +24,7 @@
 namespace ImportT1\Model;
 
 use Thelia\Core\HttpFoundation\Request;
+use Thelia\Core\HttpFoundation\Session\Session;
 
 /**
  * This class is a simple wrapper around PDO for accessing the Thelia 1 database
@@ -39,10 +40,10 @@ class Db
         $this->request = $request;
     }
 
-    public function connect()
+    public function connect(Session $session)
     {
 
-        $dbinfo = $this->getDbInfo();
+        $dbinfo = $this->getDbInfo($session);
 
         $MYSQL_ATTR_INIT_COMMAND = 1002;
 
@@ -57,26 +58,26 @@ class Db
     /**
      * @return DatabaseInfo
      */
-    public function getDbInfo()
+    public function getDbInfo(Session $session)
     {
-        return $this->request->getSession()->get('importt1-database-info', new DatabaseInfo());
+        return $session->get('importt1-database-info', new DatabaseInfo());
     }
 
-    public function setDbInfo($dbinfo)
+    public function setDbInfo($dbinfo, Session $session)
     {
-        $this->request->getSession()->set('importt1-database-info', $dbinfo);
+        $session->set('importt1-database-info', $dbinfo);
 
         return $this;
     }
 
-    public function hasClientPath()
+    public function hasClientPath(Session $session)
     {
-        return '' != $this->getDbInfo()->getClientDirectory();
+        return '' != $this->getDbInfo($session)->getClientDirectory();
     }
 
-    public function getClientPath()
+    public function getClientPath(Session $session)
     {
-        return $this->getDbInfo()->getClientDirectory();
+        return $this->getDbInfo($session)->getClientDirectory();
     }
 
     public function begin_transaction()

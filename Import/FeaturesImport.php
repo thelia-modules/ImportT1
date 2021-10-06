@@ -123,7 +123,7 @@ class FeaturesImport extends BaseImport
                             ->setLocale($lang->getLocale())
                             ->setTitle($desc->titre);
 
-                        $this->dispatcher->dispatch(TheliaEvents::FEATURE_CREATE, $event);
+                        $this->dispatcher->dispatch($event,TheliaEvents::FEATURE_CREATE);
 
                         // Updater position
                         $update_position_event = new UpdatePositionEvent(
@@ -131,7 +131,7 @@ class FeaturesImport extends BaseImport
                             UpdatePositionEvent::POSITION_ABSOLUTE,
                             $caracteristique->classement);
 
-                        $this->dispatcher->dispatch(TheliaEvents::FEATURE_UPDATE_POSITION, $update_position_event);
+                        $this->dispatcher->dispatch($update_position_event,TheliaEvents::FEATURE_UPDATE_POSITION);
 
                         Tlog::getInstance()->info(
                             "Created feature " . $event->getFeature()->getId(
@@ -151,7 +151,7 @@ class FeaturesImport extends BaseImport
                         ->setPostscriptum('') // Doesn't exists in T1
                     ;
 
-                    $this->dispatcher->dispatch(TheliaEvents::FEATURE_UPDATE, $update_event);
+                    $this->dispatcher->dispatch($update_event, TheliaEvents::FEATURE_UPDATE);
 
                     $idx++;
                 } catch (ImportException $ex) {
@@ -202,7 +202,7 @@ class FeaturesImport extends BaseImport
                             ->setLocale($lang->getLocale())
                             ->setTitle($desc->titre);
 
-                        $this->dispatcher->dispatch(TheliaEvents::FEATURE_AV_CREATE, $event);
+                        $this->dispatcher->dispatch($event, TheliaEvents::FEATURE_AV_CREATE);
 
                         if (property_exists($desc, 'classement')) {
                             // Updater position
@@ -211,7 +211,7 @@ class FeaturesImport extends BaseImport
                                 UpdatePositionEvent::POSITION_ABSOLUTE,
                                 $desc->classement);
 
-                            $this->dispatcher->dispatch(TheliaEvents::FEATURE_AV_UPDATE_POSITION, $update_position_event);
+                            $this->dispatcher->dispatch($update_position_event,TheliaEvents::FEATURE_AV_UPDATE_POSITION);
                         }
 
                         $this->feat_av_corresp->addEntry($caracdisp->id, $event->getFeatureAv()->getId());
@@ -228,7 +228,7 @@ class FeaturesImport extends BaseImport
                         ->setPostscriptum('') // Undefined in T1
                     ;
 
-                    $this->dispatcher->dispatch(TheliaEvents::FEATURE_AV_UPDATE, $update_event);
+                    $this->dispatcher->dispatch($update_event, TheliaEvents::FEATURE_AV_UPDATE);
 
                     $idx++;
                 } catch (\Exception $ex) {

@@ -25,14 +25,22 @@ namespace ImportT1\Controller\Front;
 
 use ImportT1\Model\CustomerTemp;
 use ImportT1\Model\CustomerTempQuery;
+use Symfony\Component\Config\Definition\Builder\ValidationBuilder;
+use Symfony\Component\Form\FormFactoryBuilderInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Validator\ValidatorBuilder;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Thelia\Controller\Front\BaseFrontController;
 use Front\Controller\CustomerController as BaseCustomerController;
 use Thelia\Core\Event\Customer\CustomerLoginEvent;
 use Thelia\Core\Event\TheliaEvents;
+use Thelia\Core\Security\SecurityContext;
 use Thelia\Form\CustomerLogin;
 use Thelia\Log\Tlog;
 use Thelia\Model\CustomerQuery;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class CustomerController
@@ -41,16 +49,26 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 class CustomerController extends BaseFrontController
 {
-    public function loginAction()
+    /**
+     * @Route("/login", name="importT1_customer_login_process", methods="POST")
+     * @param RequestStack $requestStack
+     * @param SecurityContext $securityContext
+     * @param EventDispatcherInterface $eventDispatcher
+     * @param TranslatorInterface $translator
+     * @param FormFactoryBuilderInterface $formFactoryBuilder
+     * @param ValidatorBuilder $validationBuilder
+     * @return RedirectResponse|\Symfony\Component\HttpFoundation\Response|null
+     */
+    public function loginAction(RequestStack $requestStack, SecurityContext $securityContext, EventDispatcherInterface $eventDispatcher, TranslatorInterface $translator, FormFactoryBuilderInterface $formFactoryBuilder, ValidatorBuilder $validationBuilder)
     {
         $customerController = new BaseCustomerController();
         $customerController->setContainer($this->container);
-        $response = $customerController->loginAction();
+        $response = $customerController->loginAction($eventDispatcher);
 
-        if (! $this->getSecurityContext()->hasCustomerUser()) {
+        if (! $securityContext->hasCustomerUser()) {
 
-            $request = $this->getRequest();
-            $customerLoginForm = new CustomerLogin($request);
+            $request = $requestStack->getCurrentRequest();
+            $customerLoginForm = new CustomerLogin($request, $eventDispatcher, $translator, $formFactoryBuilder, $validationBuilder);
 
             try {
                 $form = $this->validateForm($customerLoginForm, "post");
@@ -74,7 +92,7 @@ class CustomerController extends BaseFrontController
                         ->setProcessed(true)
                             ->save();;
 
-                    $this->dispatch(TheliaEvents::CUSTOMER_LOGIN, new CustomerLoginEvent($customer));
+                    $eventDispatcher->dispatch(new CustomerLoginEvent($customer), TheliaEvents::CUSTOMER_LOGIN);
                     
                     $successUrl = $customerLoginForm->getSuccessUrl();
 

@@ -30,6 +30,7 @@ use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Connection\PdoConnection;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Event\Category\CategoryAddContentEvent;
 use Thelia\Core\Event\Category\CategoryCreateEvent;
 use Thelia\Core\Event\Category\CategoryUpdateEvent;
@@ -37,6 +38,7 @@ use Thelia\Core\Event\Template\TemplateCreateEvent;
 use Thelia\Core\Event\Template\TemplateUpdateEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\UpdatePositionEvent;
+use Thelia\Core\HttpFoundation\Session\Session;
 use Thelia\Log\Tlog;
 use Thelia\Model\AttributeTemplate;
 use Thelia\Model\AttributeTemplateQuery;
@@ -55,7 +57,7 @@ use Thelia\Model\TemplateQuery;
 class CategoriesImport extends BaseImport
 {
 
-    private $cat_corresp, $attr_corresp, $feat_corresp, $tpl_corresp, $content_corresp;
+    private $cat_corresp, $attr_corresp, $feat_corresp, $tpl_corresp, $content_corresp, $requestStack;
 
     /**
      * CategoriesImport constructor.
@@ -64,9 +66,11 @@ class CategoriesImport extends BaseImport
      * @param Db $t1db
      * @throws \Propel\Runtime\Exception\PropelException
      */
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db, RequestStack $requestStack)
     {
-        parent::__construct($dispatcher, $t1db);
+        parent::__construct($dispatcher, $t1db, $requestStack->getCurrentRequest()->getSession());
+
+        $this->requestStack = $requestStack;
 
         $this->cat_corresp = new CorrespondanceTable(CorrespondanceTable::CATEGORIES, $this->t1db);
         $this->tpl_corresp = new CorrespondanceTable(CorrespondanceTable::TEMPLATES, $this->t1db);
@@ -145,8 +149,8 @@ class CategoriesImport extends BaseImport
                 )
             );
 
-        $image_import = new CategoryImageImport($this->dispatcher, $this->t1db);
-        $document_import = new CategoryDocumentImport($this->dispatcher, $this->t1db);
+        $image_import = new CategoryImageImport($this->dispatcher, $this->t1db, $this->requestStack->getCurrentRequest()->getSession());
+        $document_import = new CategoryDocumentImport($this->dispatcher, $this->t1db, $this->requestStack->getCurrentRequest()->getSession());
 
         while ($hdl && $rubrique = $this->t1db->fetch_object($hdl)) {
             $count++;
@@ -199,7 +203,7 @@ class CategoriesImport extends BaseImport
                             ->setParent($parent) // Will be corrected later
                             ->setVisible($rubrique->ligne == 1 ? true : false);
 
-                        $this->dispatcher->dispatch(TheliaEvents::CATEGORY_CREATE, $event);
+                        $this->dispatcher->dispatch($event, TheliaEvents::CATEGORY_CREATE);
 
                         $category_id = $event->getCategory()->getId();
 
@@ -209,7 +213,7 @@ class CategoriesImport extends BaseImport
                         $update_position_event = new UpdatePositionEvent($category_id,
                             UpdatePositionEvent::POSITION_ABSOLUTE, $rubrique->classement);
 
-                        $this->dispatcher->dispatch(TheliaEvents::CATEGORY_UPDATE_POSITION, $update_position_event);
+                        $this->dispatcher->dispatch($update_position_event, TheliaEvents::CATEGORY_UPDATE_POSITION);
 
                         Tlog::getInstance()->info("Created category $category_id from $objdesc->titre ($rubrique->id)");
 
@@ -301,7 +305,7 @@ class CategoriesImport extends BaseImport
                                     "temp"
                                 );
 
-                                $this->dispatcher->dispatch(TheliaEvents::TEMPLATE_CREATE, $tpl_create);
+                                $this->dispatcher->dispatch($tpl_create, TheliaEvents::TEMPLATE_CREATE);
 
                                 $tpl_id = $tpl_create->getTemplate()->getId();
 
@@ -338,7 +342,7 @@ class CategoriesImport extends BaseImport
                                     $this->content_corresp->getT2($content->contenu)
                                 );
 
-                                $this->dispatcher->dispatch(TheliaEvents::CATEGORY_ADD_CONTENT, $content_event);
+                                $this->dispatcher->dispatch($content_event, TheliaEvents::CATEGORY_ADD_CONTENT);
                             } catch (\Exception $ex) {
                                 Tlog::getInstance()
                                     ->addError(
@@ -369,7 +373,7 @@ class CategoriesImport extends BaseImport
                         ->setDescription($objdesc->description)
                         ->setPostscriptum($objdesc->postscriptum);
 
-                    $this->dispatcher->dispatch(TheliaEvents::CATEGORY_UPDATE, $update_event);
+                    $this->dispatcher->dispatch($update_event, TheliaEvents::CATEGORY_UPDATE);
 
                     // Create a product template name in this language
                     // -----------------------------------------------
@@ -379,7 +383,7 @@ class CategoriesImport extends BaseImport
                             "Gabarit de produit " . $tpl_update->getTemplateId()
                         );
 
-                        $this->dispatcher->dispatch(TheliaEvents::TEMPLATE_UPDATE, $tpl_update);
+                        $this->dispatcher->dispatch($tpl_update, TheliaEvents::TEMPLATE_UPDATE);
                     }
 
                     // Update the rewritten URL

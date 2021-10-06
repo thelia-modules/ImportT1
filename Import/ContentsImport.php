@@ -30,6 +30,7 @@ use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Connection\PdoConnection;
 use Propel\Runtime\Propel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Event\Content\ContentCreateEvent;
 use Thelia\Core\Event\Content\ContentUpdateEvent;
 use Thelia\Core\Event\TheliaEvents;
@@ -46,11 +47,14 @@ class ContentsImport extends BaseImport
 {
     private $content_corresp;
     private $fld_corresp;
+    protected $requestStack;
 
-    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db)
+    public function __construct(EventDispatcherInterface $dispatcher, Db $t1db, RequestStack $requestStack)
     {
 
-        parent::__construct($dispatcher, $t1db);
+        parent::__construct($dispatcher, $t1db, $requestStack->getCurrentRequest()->getSession());
+
+        $this->requestStack = $requestStack;
 
         $this->content_corresp = new CorrespondanceTable(CorrespondanceTable::CONTENTS, $this->t1db);
 
@@ -117,8 +121,8 @@ class ContentsImport extends BaseImport
                 )
             );
 
-        $image_import = new ContentImageImport($this->dispatcher, $this->t1db);
-        $document_import = new ContentDocumentImport($this->dispatcher, $this->t1db);
+        $image_import = new ContentImageImport($this->dispatcher, $this->t1db, $this->requestStack->getCurrentRequest()->getSession());
+        $document_import = new ContentDocumentImport($this->dispatcher, $this->t1db, $this->requestStack->getCurrentRequest()->getSession());
 
         while ($hdl && $contenu = $this->t1db->fetch_object($hdl)) {
 
@@ -199,7 +203,7 @@ class ContentsImport extends BaseImport
                                 ->setDefaultFolder($dossier)
                                 ->setVisible($contenu->ligne == 1 ? true : false);
 
-                            $this->dispatcher->dispatch(TheliaEvents::CONTENT_CREATE, $event);
+                            $this->dispatcher->dispatch($event, TheliaEvents::CONTENT_CREATE);
 
                             $content_id = $event->getContent()->getId();
 
@@ -207,7 +211,7 @@ class ContentsImport extends BaseImport
                             $update_position_event = new UpdatePositionEvent($content_id,
                                 UpdatePositionEvent::POSITION_ABSOLUTE, $contenu->classement);
 
-                            $this->dispatcher->dispatch(TheliaEvents::CONTENT_UPDATE_POSITION, $update_position_event);
+                            $this->dispatcher->dispatch($update_position_event, TheliaEvents::CONTENT_UPDATE_POSITION);
 
                             Tlog::getInstance()->info(
                                 "Created content $content_id from $objdesc->titre ($contenu->id)"
@@ -234,7 +238,7 @@ class ContentsImport extends BaseImport
                             ->setDescription($objdesc->description)
                             ->setPostscriptum($objdesc->postscriptum);
 
-                        $this->dispatcher->dispatch(TheliaEvents::CONTENT_UPDATE, $update_event);
+                        $this->dispatcher->dispatch($update_event, TheliaEvents::CONTENT_UPDATE);
 
                         // Update the rewritten URL, if one was defined
                         $this->updateRewrittenUrl(
